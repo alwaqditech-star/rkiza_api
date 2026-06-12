@@ -10,7 +10,8 @@
   ],
   "functions": {
     "api/index.cjs": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "api/dist/**"
     }
   }
 }

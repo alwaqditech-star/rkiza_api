@@ -31,4 +31,9 @@ if (fs.existsSync(targetDist)) {
 }
 
 copyRecursive(sourceDist, targetDist);
-console.log('[OK] Copied dist → api/dist for Vercel deployment');
+
+const handlerCount = fs
+  .readdirSync(path.join(targetDist, 'handlers'), { recursive: true })
+  .filter((f) => String(f).endsWith('route.js')).length;
+
+console.log(`[OK] Copied dist → api/dist (${handlerCount} route handlers)`);

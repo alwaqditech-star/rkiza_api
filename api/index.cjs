@@ -1,16 +1,20 @@
 'use strict';
 
+const path = require('node:path');
 const express = require('express');
 
 function loadApp() {
+  const distPath = path.join(__dirname, 'dist', 'server.js');
+
   try {
-    const mod = require('./dist/server.js');
+    const mod = require(distPath);
     const app = mod.default ?? mod.app;
 
     if (typeof app !== 'function') {
-      throw new Error('Express app export missing from ./dist/server.js');
+      throw new Error('Express app export missing from api/dist/server.js');
     }
 
+    console.log('[OK] Loaded Express app from', distPath);
     return app;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -19,12 +23,13 @@ function loadApp() {
     if (stack) console.error(stack);
 
     const fallback = express();
-    fallback.use((_req, res) => {
+    fallback.all('*', (_req, res) => {
       res.status(500).json({
         success: false,
         message: 'فشل تشغيل خادم API على Vercel',
         error: message,
-        hint: 'تأكد من نجاح npm run build ونسخ dist إلى api/dist',
+        distPath,
+        hint: 'تأكد أن api/dist موجود بعد npm run build',
       });
     });
     return fallback;
