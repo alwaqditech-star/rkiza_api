@@ -12,7 +12,8 @@
     "stop": "node scripts/stop-server.cjs",
     "build": "tsc && node scripts/prepare-vercel.cjs && node scripts/verify-dist-aliases.cjs",
     "vercel-build": "npm run build",
-    "start:prod": "node dist/server.js"
+    "start:prod": "node dist/server.js",
+    "add-admin": "tsx scripts/add-admin.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
