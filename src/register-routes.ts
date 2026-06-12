@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
 import type { Express, RequestHandler } from 'express';
 import { mountHandler } from '@/adapters/mount-handler';
+
+const requireHandler = createRequire(__filename);
 
 interface DiscoveredRoute {
   expressPath: string;
@@ -64,8 +66,14 @@ export function registerApiRoutes(app: Express, handlersRoot: string): number {
   ];
 
   for (const route of routes) {
-    const moduleUrl = pathToFileURL(route.modulePath).href;
-    const handler = mountHandler(() => import(moduleUrl), route.paramNames);
+    const relPath = `./${path
+      .relative(__dirname, route.modulePath)
+      .split(path.sep)
+      .join('/')}`;
+    const handler = mountHandler(
+      () => Promise.resolve(requireHandler(relPath)),
+      route.paramNames,
+    );
 
     for (const method of methods) {
       (app[method] as (path: string, ...handlers: RequestHandler[]) => Express)(

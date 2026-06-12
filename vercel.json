@@ -13,5 +13,9 @@
       "maxDuration": 30,
       "includeFiles": "dist/**"
     }
+  },
+  "env": {
+    "VERCEL": "1",
+    "NODE_ENV": "production"
   }
 }
