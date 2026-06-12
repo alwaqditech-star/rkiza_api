@@ -1,13 +1,11 @@
 import 'dotenv/config';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import { getDbTarget, getPool } from '@/lib/db';
 import { registerApiRoutes } from '@/register-routes';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT ?? 3001);
 const handlersRoot = path.join(__dirname, 'handlers');
 

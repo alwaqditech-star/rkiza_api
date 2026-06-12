@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "lib": ["ES2022", "DOM"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": ".",
@@ -22,6 +22,7 @@
     "node_modules",
     "dist",
     "src/lib/client-nav.ts",
+    "src/lib/client-download.ts",
     "src/lib/external-api.ts"
   ]
 }
