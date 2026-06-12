@@ -17,7 +17,28 @@ export const app = express();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? true,
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const allowed = (process.env.CORS_ORIGIN ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+      if (
+        allowed.includes(origin) ||
+        origin === 'http://localhost:3000' ||
+        /^https:\/\/[\w-]+\.vercel\.app$/.test(origin)
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, true);
+    },
     credentials: true,
   }),
 );

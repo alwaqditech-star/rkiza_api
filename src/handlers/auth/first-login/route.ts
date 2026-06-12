@@ -83,6 +83,7 @@ export async function POST(request: Request) {
     const response = NextResponse.json({
       success: true,
       message: "تم تحديث كلمة المرور بنجاح",
+      token,
     });
     setTokenCookie(response, token);
     return response;

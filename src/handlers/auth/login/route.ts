@@ -235,6 +235,7 @@ export async function POST(request: Request) {
       success: true,
       message: "تم تسجيل الدخول بنجاح",
       data: result.data,
+      token,
     });
     setTokenCookie(response, token);
     return response;
