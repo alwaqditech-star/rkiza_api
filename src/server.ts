@@ -3,7 +3,11 @@ import path from 'node:path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import { getDbTarget, getPool } from '@/lib/db';
+import {
+  getDbConfigStatus,
+  getDbTarget,
+  testDbConnection,
+} from '@/lib/db';
 import { registerApiRoutes } from '@/register-routes';
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -22,30 +26,47 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.raw({ type: 'application/octet-stream', limit: '10mb' }));
 
-app.get('/', (_req, res) => {
-  try {
-    const db = getDbTarget();
-    res.json({
-      success: true,
-      message: 'مرحباً بك في API نظام ركاز المحاسبي',
-      database: db.database,
-      host: db.host,
-      health: '/api/health',
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'خطأ غير معروف';
-    res.status(503).json({
-      success: false,
-      message: 'إعدادات قاعدة البيانات غير مكتملة على الخادم',
-      error: message,
-      hint: 'أضف MYSQL_HOST و MYSQL_DATABASE في Vercel Environment Variables',
-    });
-  }
+function sendRootInfo(
+  res: express.Response,
+  statusCode: number,
+  payload: Record<string, unknown>,
+) {
+  res.status(statusCode).json(payload);
+}
+
+function buildRootPayload() {
+  const config = getDbConfigStatus();
+  return {
+    success: config.configured,
+    message: config.configured
+      ? 'مرحباً بك في API نظام ركاز المحاسبي'
+      : 'الخادم يعمل — إعدادات قاعدة البيانات غير مكتملة',
+    database: config.database ?? null,
+    host: config.host ?? null,
+    health: '/api/health',
+    missing_env: config.configured ? undefined : config.missing,
+  };
+}
+
+app.get(['/', '/api'], (_req, res) => {
+  sendRootInfo(res, 200, buildRootPayload());
 });
 
 app.get('/api/health', async (_req, res) => {
+  const config = getDbConfigStatus();
+
+  if (!config.configured) {
+    res.status(503).json({
+      success: false,
+      message: 'إعدادات قاعدة البيانات غير مكتملة على Vercel',
+      missing_env: config.missing,
+      hint: 'أضف المتغيرات في Vercel → Settings → Environment Variables ثم أعد النشر',
+    });
+    return;
+  }
+
   try {
-    await getPool().query('SELECT 1');
+    await testDbConnection();
     const db = getDbTarget();
     res.json({
       success: true,
@@ -60,6 +81,8 @@ app.get('/api/health', async (_req, res) => {
       success: false,
       message: 'فشل الاتصال بقاعدة البيانات',
       error: message,
+      hint:
+        'تأكد من تفعيل Remote MySQL في SmarterASP والسماح بالاتصال من أي IP (%)',
     });
   }
 });
