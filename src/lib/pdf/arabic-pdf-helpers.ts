@@ -9,6 +9,20 @@ export const PDF_MIST_RGB: [number, number, number] = [122, 139, 173];
 export const PDF_SLATE_RGB: [number, number, number] = [58, 78, 114];
 export const PDF_INK_RGB: [number, number, number] = [15, 25, 35];
 
+type RgbTuple = readonly [number, number, number];
+
+export function setPdfTextColor(doc: jsPDF, rgb: RgbTuple) {
+  doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+}
+
+export function setPdfFillColor(doc: jsPDF, rgb: RgbTuple) {
+  doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+}
+
+export function setPdfDrawColor(doc: jsPDF, rgb: RgbTuple) {
+  doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+}
+
 let cachedFontBase64: string | null = null;
 
 const FONT_URLS = [
@@ -94,17 +108,17 @@ export function drawPdfPageHeader(
   const { dateLine, dayLine } = formatPdfDate(now);
 
   doc.setFontSize(12);
-  doc.setTextColor(...PDF_BRAND_RGB);
+  setPdfTextColor(doc, PDF_BRAND_RGB);
   doc.text(user.displayName || user.username, margin, topY, { align: "left" });
 
   doc.setFontSize(11);
-  doc.setTextColor(...PDF_MIST_RGB);
+  setPdfTextColor(doc, PDF_MIST_RGB);
   doc.text(dateLine, margin, topY + 8, { align: "left" });
   doc.setFontSize(10);
   doc.text(dayLine, margin, topY + 16, { align: "left" });
 
   doc.setFontSize(20);
-  doc.setTextColor(...PDF_BRAND_RGB);
+  setPdfTextColor(doc, PDF_BRAND_RGB);
   doc.text(title, pageWidth / 2, topY + 4, { align: "center" });
 
   const imageSize = 24;
@@ -114,10 +128,10 @@ export function drawPdfPageHeader(
   if (avatar) {
     doc.addImage(avatar.data, avatar.format, imageX, imageY, imageSize, imageSize);
   } else {
-    doc.setFillColor(...PDF_BRAND_PALE_RGB);
+    setPdfFillColor(doc, PDF_BRAND_PALE_RGB);
     doc.roundedRect(imageX, imageY, imageSize, imageSize, 3, 3, "F");
     doc.setFontSize(14);
-    doc.setTextColor(...PDF_BRAND_RGB);
+    setPdfTextColor(doc, PDF_BRAND_RGB);
     const initial = (user.displayName || user.username).charAt(0);
     doc.text(initial, imageX + imageSize / 2, imageY + imageSize / 2 + 2, {
       align: "center",
@@ -125,7 +139,7 @@ export function drawPdfPageHeader(
   }
 
   doc.setFontSize(10);
-  doc.setTextColor(...PDF_MIST_RGB);
+  setPdfTextColor(doc, PDF_MIST_RGB);
   doc.text(user.username, pageWidth - margin, imageY + imageSize + 6, {
     align: "right",
   });

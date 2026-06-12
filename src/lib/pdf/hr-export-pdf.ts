@@ -12,12 +12,13 @@ import {
   PDF_BRAND_RGB,
   PDF_MIST_RGB,
   registerArabicFont,
+  setPdfTextColor,
   type PdfPageHeaderUser,
 } from '@/lib/pdf/arabic-pdf-helpers';
 
 function drawPdfSubtitle(doc: jsPDF, lines: string[], startY: number): number {
   doc.setFontSize(10);
-  doc.setTextColor(...PDF_MIST_RGB);
+  setPdfTextColor(doc, PDF_MIST_RGB);
   let y = startY;
   lines.forEach((line) => {
     doc.text(line, doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
@@ -31,7 +32,7 @@ function addPdfPageNumbers(doc: jsPDF) {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
-    doc.setTextColor(...PDF_MIST_RGB);
+    setPdfTextColor(doc, PDF_MIST_RGB);
     doc.text(
       `صفحة ${i} من ${pageCount}`,
       doc.internal.pageSize.getWidth() / 2,

@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const { association_name, subscription_start, subscription_end, status } =
       body as {
         association_name?: string;

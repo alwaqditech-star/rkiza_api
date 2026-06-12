@@ -15,7 +15,7 @@ export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireClientSettings();
     const { id } = await context.params;
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const updated = await updateAssociationUser(session.id, Number(id), {
       display_name: String(body.display_name ?? '').trim(),

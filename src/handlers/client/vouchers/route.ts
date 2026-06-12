@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await requireClientWrite();
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const voucherType = body.voucher_type as VoucherType;
     const voucherDate = body.voucher_date as string;
@@ -66,9 +66,9 @@ export async function POST(request: Request) {
       amount,
       accountCode,
       purpose,
-      method: body.method,
-      ref: body.ref,
-      notes: body.notes,
+      method: body.method as string | undefined,
+      ref: body.ref as string | undefined,
+      notes: body.notes as string | undefined,
     });
 
     return NextResponse.json({

@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT ?? 3001);
 const handlersRoot = path.join(__dirname, 'handlers');
 
-const app = express();
+export const app = express();
 
 app.use(
   cors({
@@ -80,9 +80,13 @@ app.use(
   },
 );
 
-app.listen(PORT, () => {
-  const db = getDbTarget();
-  console.log(`[OK] Rikaz API running on http://localhost:${PORT}`);
-  console.log(`[OK] Database: ${db.database} @ ${db.host}`);
-  console.log(`[OK] Health: http://localhost:${PORT}/api/health`);
-});
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    const db = getDbTarget();
+    console.log(`[OK] Rikaz API running on http://localhost:${PORT}`);
+    console.log(`[OK] Database: ${db.database} @ ${db.host}`);
+    console.log(`[OK] Health: http://localhost:${PORT}/api/health`);
+  });
+}

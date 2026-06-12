@@ -11,7 +11,7 @@ export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireClientSettings();
     const { id } = await context.params;
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const accountName = String(body.account_name ?? '').trim();
 
     if (!accountName) {
@@ -23,7 +23,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
     const updated = await updateCoaAccount(session.id, Number(id), {
       account_name: accountName,
-      allow_payment: body.allow_payment ?? 'No',
+      allow_payment: (body.allow_payment as 'Yes' | 'No' | undefined) ?? 'No',
     });
 
     if (!updated) {

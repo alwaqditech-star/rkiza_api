@@ -13,7 +13,7 @@ export async function PUT(request: Request, context: RouteContext) {
     const session = await requireClientWrite();
     const { id } = await context.params;
     const employeeId = Number(id);
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const name = String(body.name ?? '').trim();
     const jobTitle = String(body.job_title ?? '').trim();

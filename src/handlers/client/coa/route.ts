@@ -26,7 +26,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await requireClientSettings();
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const accountCode = body.account_code as string;
     const accountName = body.account_name as string;
@@ -43,8 +43,8 @@ export async function POST(request: Request) {
       account_code: accountCode,
       account_name: accountName,
       account_type: accountType,
-      parent_code: body.parent_code ?? null,
-      allow_payment: body.allow_payment ?? 'No',
+      parent_code: body.parent_code ? String(body.parent_code) : null,
+      allow_payment: (body.allow_payment as 'Yes' | 'No' | undefined) ?? 'No',
       is_custom: true,
     });
 

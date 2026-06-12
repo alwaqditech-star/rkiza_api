@@ -8,6 +8,7 @@ import {
   PDF_BRAND_RGB,
   PDF_MIST_RGB,
   registerArabicFont,
+  setPdfTextColor,
 } from "@/lib/pdf/arabic-pdf-helpers";
 
 export interface SubscribersReportRow {
@@ -83,7 +84,7 @@ export async function buildSubscribersReportPdf(
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
-    doc.setTextColor(...PDF_MIST_RGB);
+    setPdfTextColor(doc, PDF_MIST_RGB);
     doc.text(
       `صفحة ${i} من ${pageCount}`,
       doc.internal.pageSize.getWidth() / 2,

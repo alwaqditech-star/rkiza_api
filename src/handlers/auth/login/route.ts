@@ -199,7 +199,7 @@ async function loginAssociationSubUser(username: string, password: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const username = (body.username as string | undefined)?.trim();
     const password = body.password as string | undefined;
 

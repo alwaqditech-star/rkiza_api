@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await requireClientWrite();
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const month = String(body.month ?? '').padStart(2, '0');
     const year = Number(body.year ?? new Date().getFullYear());
 

@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await requireClientSettings();
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const displayName = String(body.display_name ?? '').trim();
     const username = String(body.username ?? '').trim();

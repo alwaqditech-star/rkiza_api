@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await requireClientWrite();
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const name = String(body.name ?? '').trim();
     const jobTitle = String(body.job_title ?? '').trim();

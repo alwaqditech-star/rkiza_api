@@ -40,7 +40,7 @@ function discoverRoutes(
       continue;
     }
 
-    if (entry.name !== 'route.ts') continue;
+    if (!/^route\.(t|j)s$/.test(entry.name)) continue;
 
     const expressPath = `/api/${urlSegments.join('/')}`.replace(/\/+/g, '/');
     routes.push({

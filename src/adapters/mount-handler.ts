@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response as ExpressResponse, NextFunction } from 'express';
 import { NextResponse } from '@/shims/next-server';
 import { requestContext } from '@/lib/request-context';
 
@@ -33,7 +33,7 @@ function buildWebRequest(req: Request): globalThis.Request {
 
   if (req.method !== 'GET' && req.method !== 'HEAD' && req.body !== undefined) {
     if (Buffer.isBuffer(req.body)) {
-      init.body = req.body;
+      init.body = new Uint8Array(req.body);
     } else if (typeof req.body === 'object' && req.body !== null) {
       init.body = JSON.stringify(req.body);
       if (!headers.has('content-type')) {
@@ -47,7 +47,10 @@ function buildWebRequest(req: Request): globalThis.Request {
   return new globalThis.Request(url, init);
 }
 
-async function sendWebResponse(webResponse: Response, res: Response): Promise<void> {
+async function sendWebResponse(
+  webResponse: globalThis.Response,
+  res: ExpressResponse,
+): Promise<void> {
   res.status(webResponse.status);
 
   webResponse.headers.forEach((value, key) => {
@@ -56,7 +59,7 @@ async function sendWebResponse(webResponse: Response, res: Response): Promise<vo
   });
 
   if (webResponse instanceof NextResponse) {
-    for (const cookie of webResponse.getCookieHeaders()) {
+    for (const cookie of (webResponse as NextResponse).getCookieHeaders()) {
       res.append('Set-Cookie', cookie);
     }
   }
@@ -74,7 +77,7 @@ export function mountHandler(
   loadModule: () => Promise<HandlerModule>,
   paramNames: string[] = [],
 ) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: ExpressResponse, next: NextFunction) => {
     try {
       const mod = await loadModule();
       const handler = mod[req.method as keyof HandlerModule] as

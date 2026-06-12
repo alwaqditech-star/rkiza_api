@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await requireClientWrite();
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const fiscalYear = Number(body.fiscal_year ?? new Date().getFullYear());
 
     const payload = {

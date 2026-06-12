@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await requireClientWrite();
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const journalDate = String(body.journal_date ?? '').slice(0, 10);
     const description = String(body.description ?? '').trim();

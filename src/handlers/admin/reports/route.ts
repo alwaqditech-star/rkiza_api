@@ -97,7 +97,9 @@ async function buildReports() {
   const accountMap = new Map(
     accountRows.map((r) => [r.association_id, r.count])
   );
-  const safetyMap = new Map(safetyRows.map((r) => [r.association_id, r]));
+  const safetyMap = new Map<number, SafetyRow>(
+    safetyRows.map((r) => [r.association_id, r]),
+  );
 
   const reports = associations.map((assoc) => {
     const enriched = enrichAssociation(assoc);
