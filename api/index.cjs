@@ -2,19 +2,22 @@
 
 const path = require('node:path');
 const express = require('express');
+const { registerDistAliases } = require('../scripts/register-dist-aliases.cjs');
+
+const distRoot = path.join(__dirname, 'dist');
 
 function loadApp() {
-  const distPath = path.join(__dirname, 'dist', 'server.js');
-
   try {
-    const mod = require(distPath);
+    registerDistAliases(distRoot);
+
+    const mod = require(path.join(distRoot, 'server.js'));
     const app = mod.default ?? mod.app;
 
     if (typeof app !== 'function') {
       throw new Error('Express app export missing from api/dist/server.js');
     }
 
-    console.log('[OK] Loaded Express app from', distPath);
+    console.log('[OK] Loaded Express app from', distRoot);
     return app;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -28,8 +31,8 @@ function loadApp() {
         success: false,
         message: 'فشل تشغيل خادم API على Vercel',
         error: message,
-        distPath,
-        hint: 'تأكد أن api/dist موجود بعد npm run build',
+        distRoot,
+        hint: 'تحقق من api/dist ومسارات @/ بعد npm run build',
       });
     });
     return fallback;

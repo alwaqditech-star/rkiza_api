@@ -32,6 +32,12 @@ if (fs.existsSync(targetDist)) {
 
 copyRecursive(sourceDist, targetDist);
 
+const { execSync } = require('node:child_process');
+execSync('npx tsc-alias -p tsconfig.json --dir api/dist', {
+  cwd: root,
+  stdio: 'inherit',
+});
+
 const handlerCount = fs
   .readdirSync(path.join(targetDist, 'handlers'), { recursive: true })
   .filter((f) => String(f).endsWith('route.js')).length;
