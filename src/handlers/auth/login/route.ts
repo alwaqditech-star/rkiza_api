@@ -242,12 +242,19 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "خطأ غير معروف";
 
-    if (message.includes("ECONNREFUSED") || message.includes("connect")) {
+    if (
+      message.includes("ECONNREFUSED") ||
+      message.includes("connect") ||
+      message.includes("ETIMEDOUT") ||
+      message.includes("ECONNRESET") ||
+      message.includes("PROTOCOL_CONNECTION_LOST") ||
+      message.includes("إعدادات قاعدة البيانات")
+    ) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "لا يمكن الاتصال بقاعدة البيانات — راجع إعدادات MYSQL_* في .env.local",
+            "لا يمكن الاتصال بقاعدة البيانات — راجع إعدادات MYSQL_* في Vercel",
         },
         { status: 503 },
       );

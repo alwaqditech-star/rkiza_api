@@ -99,7 +99,7 @@ function buildPoolConfig(): PoolOptions {
       maxIdle: Number(process.env.DB_MAX_IDLE ?? 1),
       idleTimeout: Number(process.env.DB_IDLE_TIMEOUT ?? 60_000),
       queueLimit: 0,
-      connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT ?? 15_000),
+      connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT ?? (process.env.VERCEL ? 30_000 : 15_000)),
       enableKeepAlive: true,
       keepAliveInitialDelay: 0,
       charset: 'utf8mb4_unicode_ci',
@@ -182,29 +182,94 @@ export function getPool(): Pool {
 
 export type SqlParams = ExecuteValues | readonly unknown[];
 
+function isTransientDbError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes('ECONNRESET') ||
+    message.includes('ETIMEDOUT') ||
+    message.includes('ECONNREFUSED') ||
+    message.includes('Connection lost') ||
+    message.includes('Cannot enqueue Query after fatal error') ||
+    message.includes('Pool is closed') ||
+    message.includes('closed state') ||
+    message.includes('PROTOCOL_CONNECTION_LOST')
+  );
+}
+
+async function resetPool(): Promise<void> {
+  if (useGlobalPool()) {
+    if (globalForDb.mysqlPool) {
+      try {
+        await globalForDb.mysqlPool.end();
+      } catch {
+        /* ignore */
+      }
+      globalForDb.mysqlPool = undefined;
+      globalForDb.mysqlPoolKey = undefined;
+    }
+    return;
+  }
+
+  if (pool) {
+    try {
+      await pool.end();
+    } catch {
+      /* ignore */
+    }
+    pool = null;
+    poolKey = null;
+  }
+}
+
+async function withDbRetry<T>(fn: () => Promise<T>, retries = 2): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries && isTransientDbError(error)) {
+        await resetPool();
+        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError;
+}
+
 export async function query<T extends RowDataPacket[]>(
   sql: string,
   params: SqlParams = [],
 ): Promise<T> {
-  const [rows] = await getPool().query<T>(sql, params as ExecuteValues);
-  return rows;
+  return withDbRetry(async () => {
+    const [rows] = await getPool().query<T>(sql, params as ExecuteValues);
+    return rows;
+  });
 }
 
 export async function execute(
   sql: string,
   params: SqlParams = [],
 ): Promise<ResultSetHeader> {
-  const [result] = await getPool().execute<ResultSetHeader>(
-    sql,
-    params as ExecuteValues,
-  );
-  return result;
+  return withDbRetry(async () => {
+    const [result] = await getPool().execute<ResultSetHeader>(
+      sql,
+      params as ExecuteValues,
+    );
+    return result;
+  });
 }
 
 export async function getConnection() {
-  return getPool().getConnection();
+  return withDbRetry(() => getPool().getConnection());
 }
 
 export async function testDbConnection(): Promise<void> {
-  await getPool().query('SELECT 1');
+  await withDbRetry(async () => {
+    await getPool().query('SELECT 1');
+  });
 }
