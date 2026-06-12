@@ -127,9 +127,13 @@ export default app;
 
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    const db = getDbTarget();
+    const config = getDbConfigStatus();
     console.log(`[OK] Rikaz API running on http://localhost:${PORT}`);
-    console.log(`[OK] Database: ${db.database} @ ${db.host}`);
+    if (config.configured) {
+      console.log(`[OK] Database: ${config.database} @ ${config.host}`);
+    } else {
+      console.log('[WARN] Database env not configured');
+    }
     console.log(`[OK] Health: http://localhost:${PORT}/api/health`);
   });
 }

@@ -1,31 +1,34 @@
-const { createRequire } = require('node:module');
-const path = require('node:path');
+'use strict';
+
 const express = require('express');
 
-const requireFromDist = createRequire(path.join(__dirname, '../dist/server.js'));
+function loadApp() {
+  try {
+    const mod = require('./dist/server.js');
+    const app = mod.default ?? mod.app;
 
-let app;
+    if (typeof app !== 'function') {
+      throw new Error('Express app export missing from ./dist/server.js');
+    }
 
-try {
-  const mod = requireFromDist('./server.js');
-  app = mod.default ?? mod.app;
+    return app;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    console.error('[API BOOT ERROR]', message);
+    if (stack) console.error(stack);
 
-  if (typeof app !== 'function') {
-    throw new Error('تعذر تحميل تطبيق Express من dist/server.js');
-  }
-} catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error('[API BOOT ERROR]', message);
-
-  app = express();
-  app.use((_req, res) => {
-    res.status(500).json({
-      success: false,
-      message: 'فشل تشغيل خادم API',
-      error: message,
-      hint: 'تأكد من نجاح npm run build ووجود مجلد dist على Vercel',
+    const fallback = express();
+    fallback.use((_req, res) => {
+      res.status(500).json({
+        success: false,
+        message: 'فشل تشغيل خادم API على Vercel',
+        error: message,
+        hint: 'تأكد من نجاح npm run build ونسخ dist إلى api/dist',
+      });
     });
-  });
+    return fallback;
+  }
 }
 
-module.exports = app;
+module.exports = loadApp();

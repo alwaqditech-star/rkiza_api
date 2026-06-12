@@ -10,7 +10,7 @@
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "stop": "node scripts/stop-server.cjs",
-    "build": "tsc && tsc-alias -p tsconfig.json",
+    "build": "tsc && tsc-alias -p tsconfig.json && node scripts/prepare-vercel.cjs",
     "vercel-build": "npm run build",
     "start:prod": "node dist/server.js"
   },
