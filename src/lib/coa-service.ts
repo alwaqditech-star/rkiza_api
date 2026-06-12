@@ -1,7 +1,7 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import { flattenCoaTemplate } from '@/lib/coa-utils';
-import type { ChartOfAccount } from '@/lib/types';
+import { execute, query } from './db';
+import { flattenCoaTemplate } from './coa-utils';
+import type { ChartOfAccount } from './types';
 
 interface CoaRow extends RowDataPacket, ChartOfAccount {}
 

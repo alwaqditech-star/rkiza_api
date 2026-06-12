@@ -1,5 +1,5 @@
-import { COA } from '@/lib/coa-data';
-import type { ChartOfAccount } from '@/lib/types';
+import { COA } from './coa-data';
+import type { ChartOfAccount } from './types';
 
 export interface FlatCoaAccount {
   code: string;

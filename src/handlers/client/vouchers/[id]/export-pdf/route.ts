@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
-import { requireClientSession } from "@/lib/auth";
-import { query } from "@/lib/db";
+import { requireClientSession } from "../../../../../lib/auth";
+import { query } from "../../../../../lib/db";
 import {
   buildVoucherPdf,
   getVoucherPdfFilename,
-} from "@/lib/pdf/receipt-voucher-report";
-import { getVoucherById } from "@/lib/vouchers";
+} from "../../../../../lib/pdf/receipt-voucher-report";
+import { getVoucherById } from "../../../../../lib/vouchers";
 
 interface AssociationRow extends RowDataPacket {
   association_name: string;

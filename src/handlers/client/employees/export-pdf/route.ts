@@ -1,12 +1,12 @@
-import { requireClientSession } from '@/lib/auth';
-import { employeesFilename } from '@/lib/hr-export';
+import { requireClientSession } from '../../../../lib/auth';
+import { employeesFilename } from '../../../../lib/hr-export';
 import {
   exportErrorResponse,
   exportPdfResponse,
   getAssociationExportInfo,
-} from '@/lib/export-association';
-import { listEmployees } from '@/lib/employee-service';
-import { buildEmployeesPdf } from '@/lib/pdf/hr-export-pdf';
+} from '../../../../lib/export-association';
+import { listEmployees } from '../../../../lib/employee-service';
+import { buildEmployeesPdf } from '../../../../lib/pdf/hr-export-pdf';
 
 export async function GET() {
   try {

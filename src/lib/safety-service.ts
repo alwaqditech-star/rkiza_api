@@ -1,6 +1,6 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import type { SafetyFinancialInput } from '@/lib/types';
+import { execute, query } from './db';
+import type { SafetyFinancialInput } from './types';
 
 interface SafetyRow extends RowDataPacket, SafetyFinancialInput {}
 

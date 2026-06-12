@@ -1,13 +1,13 @@
-import { requireClientSession } from '@/lib/auth';
+import { requireClientSession } from '../../../../lib/auth';
 import {
   buildLedgerExcel,
   statementFilename,
-} from '@/lib/accounting-export';
+} from '../../../../lib/accounting-export';
 import {
   exportErrorResponse,
   exportExcelResponse,
-} from '@/lib/export-association';
-import { getAccountLedger } from '@/lib/journal-service';
+} from '../../../../lib/export-association';
+import { getAccountLedger } from '../../../../lib/journal-service';
 
 function resolveStatementTitle(variant: string | null) {
   return variant === 'monthly' ? 'دفتر الأستاذ العام الشهري' : 'كشف حساب';

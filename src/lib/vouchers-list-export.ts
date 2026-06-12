@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
-import { fmtAmt, fmtDate } from "@/lib/format";
-import type { VoucherType } from "@/lib/types";
-import type { VoucherListItem } from "@/lib/vouchers";
+import { fmtAmt, fmtDate } from "./format";
+import type { VoucherType } from "./types";
+import type { VoucherListItem } from "./vouchers";
 
 export interface VoucherListExportRow {
   voucher_number: string;

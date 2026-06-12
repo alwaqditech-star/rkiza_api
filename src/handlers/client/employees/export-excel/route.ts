@@ -1,10 +1,10 @@
-import { requireClientSession } from '@/lib/auth';
-import { buildEmployeesExcel, employeesFilename } from '@/lib/hr-export';
+import { requireClientSession } from '../../../../lib/auth';
+import { buildEmployeesExcel, employeesFilename } from '../../../../lib/hr-export';
 import {
   exportErrorResponse,
   exportExcelResponse,
-} from '@/lib/export-association';
-import { listEmployees } from '@/lib/employee-service';
+} from '../../../../lib/export-association';
+import { listEmployees } from '../../../../lib/employee-service';
 
 export async function GET() {
   try {

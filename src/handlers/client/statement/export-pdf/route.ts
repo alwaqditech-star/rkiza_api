@@ -1,12 +1,12 @@
-import { requireClientSession } from '@/lib/auth';
-import { statementFilename } from '@/lib/accounting-export';
+import { requireClientSession } from '../../../../lib/auth';
+import { statementFilename } from '../../../../lib/accounting-export';
 import {
   exportErrorResponse,
   exportPdfResponse,
   getAssociationExportInfo,
-} from '@/lib/export-association';
-import { getAccountLedger } from '@/lib/journal-service';
-import { buildLedgerPdf } from '@/lib/pdf/accounting-export-pdf';
+} from '../../../../lib/export-association';
+import { getAccountLedger } from '../../../../lib/journal-service';
+import { buildLedgerPdf } from '../../../../lib/pdf/accounting-export-pdf';
 
 function resolveStatementTitle(variant: string | null) {
   return variant === 'monthly' ? 'دفتر الأستاذ العام الشهري' : 'كشف حساب';

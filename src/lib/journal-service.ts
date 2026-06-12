@@ -1,8 +1,8 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, getConnection, query } from '@/lib/db';
-import { listCoaAccounts } from '@/lib/coa-service';
-import { decodeVoucherDescription } from '@/lib/voucher-meta';
-import { listVouchers } from '@/lib/vouchers';
+import { execute, getConnection, query } from './db';
+import { listCoaAccounts } from './coa-service';
+import { decodeVoucherDescription } from './voucher-meta';
+import { listVouchers } from './vouchers';
 
 export interface JournalLineView {
   account_code: string;

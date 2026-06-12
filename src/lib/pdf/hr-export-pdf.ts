@@ -1,8 +1,8 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { employeeStatusLabel } from '@/lib/hr-export';
-import { fmtAmt, fmtDate } from '@/lib/format';
-import type { Employee, PayrollPreview } from '@/lib/types';
+import { employeeStatusLabel } from '../hr-export';
+import { fmtAmt, fmtDate } from '../format';
+import type { Employee, PayrollPreview } from '../types';
 import {
   drawPdfPageHeader,
   getArabicFontBase64,
@@ -14,7 +14,7 @@ import {
   registerArabicFont,
   setPdfTextColor,
   type PdfPageHeaderUser,
-} from '@/lib/pdf/arabic-pdf-helpers';
+} from './arabic-pdf-helpers';
 
 function drawPdfSubtitle(doc: jsPDF, lines: string[], startY: number): number {
   doc.setFontSize(10);

@@ -1,4 +1,4 @@
-import type { AssociationUserRole, ClientSession } from '@/lib/types';
+import type { AssociationUserRole, ClientSession } from './types';
 
 export type ClientAccessLevel = 'read' | 'write' | 'settings';
 

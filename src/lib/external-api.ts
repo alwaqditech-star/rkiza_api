@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from '@/lib/auth';
+import { AUTH_COOKIE_NAME } from './auth';
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
 

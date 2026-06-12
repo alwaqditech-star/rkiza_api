@@ -9,7 +9,7 @@ import {
   PDF_MIST_RGB,
   registerArabicFont,
   setPdfTextColor,
-} from "@/lib/pdf/arabic-pdf-helpers";
+} from "./arabic-pdf-helpers";
 
 export interface SubscribersReportRow {
   association_name: string;

@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession } from '@/lib/auth';
-import { getDashboardStats } from '@/lib/vouchers';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession } from '../../../lib/auth';
+import { getDashboardStats } from '../../../lib/vouchers';
 
 export async function GET() {
   try {

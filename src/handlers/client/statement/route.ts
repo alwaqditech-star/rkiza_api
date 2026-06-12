@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession } from '@/lib/auth';
-import { getAccountLedger } from '@/lib/journal-service';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession } from '../../../lib/auth';
+import { getAccountLedger } from '../../../lib/journal-service';
 
 export async function GET(request: Request) {
   try {

@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { deleteBankAccount, updateBankAccount } from '@/lib/bank-service';
-import type { BankAccountStatus } from '@/lib/types';
+import { NextResponse } from '../../../../shims/next-server';
+import { requireClientSettings } from '../../../../lib/auth';
+import { handleClientApiError } from '../../../../lib/client-api-error';
+import { deleteBankAccount, updateBankAccount } from '../../../../lib/bank-service';
+import type { BankAccountStatus } from '../../../../lib/types';
 
 interface RouteContext {
   params: Promise<{ id: string }>;

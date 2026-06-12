@@ -1,7 +1,7 @@
 import type { RowDataPacket } from "mysql2";
-import { hashPassword } from "@/lib/auth";
-import { ensureCoaSeeded } from "@/lib/coa-service";
-import { execute, query } from "@/lib/db";
+import { hashPassword } from "./auth";
+import { ensureCoaSeeded } from "./coa-service";
+import { execute, query } from "./db";
 
 export interface AssociationRow extends RowDataPacket {
   id: number;

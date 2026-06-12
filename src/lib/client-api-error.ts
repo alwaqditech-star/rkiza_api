@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { ClientPermissionError } from '@/lib/auth';
+import { NextResponse } from '../shims/next-server';
+import { ClientPermissionError } from './auth';
 
 export function handleClientApiError(error: unknown, fallback = 'حدث خطأ غير متوقع') {
   if (error instanceof ClientPermissionError) {

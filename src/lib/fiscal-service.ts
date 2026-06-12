@@ -1,12 +1,12 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import { createManualJournal, listUnifiedJournals } from '@/lib/journal-service';
+import { execute, query } from './db';
+import { createManualJournal, listUnifiedJournals } from './journal-service';
 import {
   getAssociationSettings,
   upsertAssociationSettings,
-} from '@/lib/org-settings-service';
-import { getDashboardStats } from '@/lib/vouchers';
-import type { FiscalStatus, FiscalYearRecord } from '@/lib/types';
+} from './org-settings-service';
+import { getDashboardStats } from './vouchers';
+import type { FiscalStatus, FiscalYearRecord } from './types';
 
 interface FiscalRow extends RowDataPacket {
   id: number;

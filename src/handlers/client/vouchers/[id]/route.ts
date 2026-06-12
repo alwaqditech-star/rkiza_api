@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientDelete } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { deleteVoucher, getVoucherById } from '@/lib/vouchers';
+import { NextResponse } from '../../../../shims/next-server';
+import { requireClientSession, requireClientDelete } from '../../../../lib/auth';
+import { handleClientApiError } from '../../../../lib/client-api-error';
+import { deleteVoucher, getVoucherById } from '../../../../lib/vouchers';
 
 export async function GET(
   _request: Request,

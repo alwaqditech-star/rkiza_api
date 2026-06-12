@@ -1,10 +1,10 @@
 import ExcelJS from 'exceljs';
-import { fmtAmt, fmtDate } from '@/lib/format';
+import { fmtAmt, fmtDate } from './format';
 import type {
   LedgerResult,
   TrialBalanceRow,
   UnifiedJournalView,
-} from '@/lib/journal-service';
+} from './journal-service';
 
 export function balanceLabel(value: number): string {
   return `${fmtAmt(Math.abs(value))} ${value >= 0 ? 'مدين' : 'دائن'}`;

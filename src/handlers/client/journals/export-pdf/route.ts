@@ -1,12 +1,12 @@
-import { requireClientSession } from '@/lib/auth';
-import { journalBookFilename } from '@/lib/accounting-export';
+import { requireClientSession } from '../../../../lib/auth';
+import { journalBookFilename } from '../../../../lib/accounting-export';
 import {
   exportErrorResponse,
   exportPdfResponse,
   getAssociationExportInfo,
-} from '@/lib/export-association';
-import { listUnifiedJournals } from '@/lib/journal-service';
-import { buildJournalBookPdf } from '@/lib/pdf/accounting-export-pdf';
+} from '../../../../lib/export-association';
+import { listUnifiedJournals } from '../../../../lib/journal-service';
+import { buildJournalBookPdf } from '../../../../lib/pdf/accounting-export-pdf';
 
 export async function GET(request: Request) {
   try {

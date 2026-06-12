@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
@@ -8,8 +8,8 @@ import {
   hashPassword,
   requireAdminSession,
   signToken,
-} from "@/lib/auth";
-import { query } from "@/lib/db";
+} from "../../../lib/auth";
+import { query } from "../../../lib/db";
 
 interface AdminRow extends RowDataPacket {
   id: number;

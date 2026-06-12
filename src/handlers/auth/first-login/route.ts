@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
-import { query } from "@/lib/db";
+import { query } from "../../../lib/db";
 import {
   AUTH_COOKIE_NAME,
   buildClientSession,
   hashPassword,
   requireClientSession,
   signToken,
-} from "@/lib/auth";
+} from "../../../lib/auth";
 
 interface AssociationRow extends RowDataPacket {
   id: number;

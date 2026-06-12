@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "../../../../lib/auth";
 import {
   enrichAssociation,
   type AssociationRow,
-} from "@/lib/associations";
-import { query } from "@/lib/db";
-import { buildSubscribersReportPdf } from "@/lib/pdf/subscribers-report";
+} from "../../../../lib/associations";
+import { query } from "../../../../lib/db";
+import { buildSubscribersReportPdf } from "../../../../lib/pdf/subscribers-report";
 
 interface AdminRow extends RowDataPacket {
   username: string;

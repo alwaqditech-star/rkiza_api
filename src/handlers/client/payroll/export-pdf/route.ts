@@ -1,12 +1,12 @@
-import { requireClientSession } from '@/lib/auth';
-import { payrollFilename } from '@/lib/hr-export';
+import { requireClientSession } from '../../../../lib/auth';
+import { payrollFilename } from '../../../../lib/hr-export';
 import {
   exportErrorResponse,
   exportPdfResponse,
   getAssociationExportInfo,
-} from '@/lib/export-association';
-import { getPayrollPreview } from '@/lib/payroll-service';
-import { buildPayrollPdf } from '@/lib/pdf/hr-export-pdf';
+} from '../../../../lib/export-association';
+import { getPayrollPreview } from '../../../../lib/payroll-service';
+import { buildPayrollPdf } from '../../../../lib/pdf/hr-export-pdf';
 
 export async function GET(request: Request) {
   try {

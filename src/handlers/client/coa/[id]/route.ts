@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { deleteCoaAccount, updateCoaAccount } from '@/lib/coa-service';
+import { NextResponse } from '../../../../shims/next-server';
+import { requireClientSettings } from '../../../../lib/auth';
+import { handleClientApiError } from '../../../../lib/client-api-error';
+import { deleteCoaAccount, updateCoaAccount } from '../../../../lib/coa-service';
 
 interface RouteContext {
   params: Promise<{ id: string }>;

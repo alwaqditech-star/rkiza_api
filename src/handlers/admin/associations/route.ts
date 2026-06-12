@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/auth";
+import { NextResponse } from "../../../shims/next-server";
+import { requireAdminSession } from "../../../lib/auth";
 import {
   addYears,
   createAssociation,
   formatDateYMD,
   listAssociationsForAdmin,
-} from "@/lib/associations";
+} from "../../../lib/associations";
 
 async function guardAdmin() {
   try {

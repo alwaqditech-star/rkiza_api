@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import { requireClientSession } from "@/lib/auth";
+import { NextResponse } from "../../../../shims/next-server";
+import { requireClientSession } from "../../../../lib/auth";
 import {
   buildVouchersListExcel,
   getVoucherListExportFilename,
   mapVoucherListExportRows,
-} from "@/lib/vouchers-list-export";
-import { listVouchers } from "@/lib/vouchers";
-import type { VoucherType } from "@/lib/types";
+} from "../../../../lib/vouchers-list-export";
+import { listVouchers } from "../../../../lib/vouchers";
+import type { VoucherType } from "../../../../lib/types";
 
 function parseVoucherType(value: string | null): VoucherType | null {
   if (value === "receipt" || value === "disbursement") return value;

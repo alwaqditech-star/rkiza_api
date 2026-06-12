@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
-import { fmtAmt, fmtDate } from '@/lib/format';
-import type { Employee, EmployeeStatus, PayrollPreview } from '@/lib/types';
+import { fmtAmt, fmtDate } from './format';
+import type { Employee, EmployeeStatus, PayrollPreview } from './types';
 
 const STATUS_LABELS: Record<EmployeeStatus, string> = {
   active: 'نشط',

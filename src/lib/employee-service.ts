@@ -1,7 +1,7 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import { calcEmployeeTotals } from '@/lib/employee-utils';
-import type { Employee, EmployeeInput, EmployeeStatus } from '@/lib/types';
+import { execute, query } from './db';
+import { calcEmployeeTotals } from './employee-utils';
+import type { Employee, EmployeeInput, EmployeeStatus } from './types';
 
 interface EmployeeRow extends RowDataPacket {
   id: number;
@@ -29,7 +29,7 @@ function isMissingEmployeeTable(error: unknown): boolean {
   return message.includes('employees') || message.includes("doesn't exist");
 }
 
-export { calcEmployeeTotals } from '@/lib/employee-utils';
+export { calcEmployeeTotals } from './employee-utils';
 
 function mapEmployee(row: EmployeeRow): Employee {
   const totals = calcEmployeeTotals(row);

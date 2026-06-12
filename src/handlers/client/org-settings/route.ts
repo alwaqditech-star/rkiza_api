@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from '../../../shims/next-server';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
-import { requireClientSession, requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
+import { requireClientSession, requireClientSettings } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
 import {
   getAssociationSettings,
   upsertAssociationSettings,
-} from '@/lib/org-settings-service';
+} from '../../../lib/org-settings-service';
 
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const MAX_SIZE = 2 * 1024 * 1024;

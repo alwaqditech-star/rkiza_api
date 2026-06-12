@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
-import { query } from "@/lib/db";
+import { query } from "../../../lib/db";
 import {
   AUTH_COOKIE_NAME,
   buildAdminSession,
@@ -8,8 +8,8 @@ import {
   buildClientSessionFromSubUser,
   comparePassword,
   signToken,
-} from "@/lib/auth";
-import { getSubscriptionDaysRemaining } from "@/lib/associations";
+} from "../../../lib/auth";
+import { getSubscriptionDaysRemaining } from "../../../lib/associations";
 interface AdminRow extends RowDataPacket {
   id: number;
   username: string;

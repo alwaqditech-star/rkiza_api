@@ -1,11 +1,11 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { getRequestContext } from '@/lib/request-context';
-import type { AdminSession, AuthSession, ClientSession } from '@/lib/types';
+import { getRequestContext } from './request-context';
+import type { AdminSession, AuthSession, ClientSession } from './types';
 import {
   getClientPermissions,
   type ClientPermissions,
-} from '@/lib/client-permissions';
+} from './client-permissions';
 
 export type { AdminSession, ClientSession, AuthSession };
 

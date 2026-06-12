@@ -1,6 +1,6 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import type { AssociationSettings } from '@/lib/types';
+import { execute, query } from './db';
+import type { AssociationSettings } from './types';
 
 interface SettingsRow extends RowDataPacket {
   association_id: number;

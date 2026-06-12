@@ -1,12 +1,12 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, getConnection, query } from '@/lib/db';
-import { DEFAULT_CASH_ACCOUNT } from '@/lib/coa-utils';
+import { execute, getConnection, query } from './db';
+import { DEFAULT_CASH_ACCOUNT } from './coa-utils';
 import {
   decodeVoucherDescription,
   encodeVoucherDescription,
   type VoucherMeta,
-} from '@/lib/voucher-meta';
-import type { JournalEntry, VoucherType, VoucherWithEntries } from '@/lib/types';
+} from './voucher-meta';
+import type { JournalEntry, VoucherType, VoucherWithEntries } from './types';
 
 interface VoucherRow extends RowDataPacket {
   id: number;

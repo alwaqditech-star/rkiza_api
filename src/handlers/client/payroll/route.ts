@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientWrite } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { getPayrollPreview, postPayrollJournal } from '@/lib/payroll-service';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientWrite } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
+import { getPayrollPreview, postPayrollJournal } from '../../../lib/payroll-service';
 
 export async function GET(request: Request) {
   try {

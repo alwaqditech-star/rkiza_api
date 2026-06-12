@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientWrite } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientWrite } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
 import {
   createManualJournal,
   listUnifiedJournals,
   nextManualJournalNumber,
-} from '@/lib/journal-service';
+} from '../../../lib/journal-service';
 
 export async function GET(request: Request) {
   try {

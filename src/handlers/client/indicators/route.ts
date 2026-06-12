@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientWrite } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { calcSafetyFromInput } from '@/lib/safety-indicators';
-import { getSafetyInput, upsertSafetyInput } from '@/lib/safety-service';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientWrite } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
+import { calcSafetyFromInput } from '../../../lib/safety-indicators';
+import { getSafetyInput, upsertSafetyInput } from '../../../lib/safety-service';
 export async function GET(request: Request) {
   try {
     const session = await requireClientSession();

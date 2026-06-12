@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
@@ -9,9 +9,9 @@ import {
   requireClientSession,
   requirePrimaryClientAccount,
   signToken,
-} from "@/lib/auth";
-import { handleClientApiError } from "@/lib/client-api-error";
-import { query } from "@/lib/db";
+} from "../../../lib/auth";
+import { handleClientApiError } from "../../../lib/client-api-error";
+import { query } from "../../../lib/db";
 
 interface AssociationRow extends RowDataPacket {
   id: number;

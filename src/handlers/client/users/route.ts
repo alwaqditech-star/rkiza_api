@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientSettings } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
 import {
   createAssociationUser,
   listAssociationUsers,
-} from '@/lib/association-users-service';
-import type { AssociationUserRole, AssociationUserStatus } from '@/lib/types';
+} from '../../../lib/association-users-service';
+import type { AssociationUserRole, AssociationUserStatus } from '../../../lib/types';
 
 export async function GET() {
   try {

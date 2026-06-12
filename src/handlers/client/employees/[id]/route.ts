@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { requireClientWrite, requireClientDelete } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { deleteEmployee, updateEmployee } from '@/lib/employee-service';
-import type { EmployeeStatus } from '@/lib/types';
+import { NextResponse } from '../../../../shims/next-server';
+import { requireClientWrite, requireClientDelete } from '../../../../lib/auth';
+import { handleClientApiError } from '../../../../lib/client-api-error';
+import { deleteEmployee, updateEmployee } from '../../../../lib/employee-service';
+import type { EmployeeStatus } from '../../../../lib/types';
 
 interface RouteContext {
   params: Promise<{ id: string }>;

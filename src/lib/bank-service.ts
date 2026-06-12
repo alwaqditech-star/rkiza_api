@@ -1,6 +1,6 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import type { BankAccount, BankAccountStatus } from '@/lib/types';
+import { execute, query } from './db';
+import type { BankAccount, BankAccountStatus } from './types';
 
 interface BankRow extends RowDataPacket {
   id: number;

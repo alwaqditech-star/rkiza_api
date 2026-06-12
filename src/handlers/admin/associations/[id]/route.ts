@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
-import { hashPassword, requireAdminSession } from "@/lib/auth";
-import { execute, query } from "@/lib/db";
-import type { UpdateAssociationRequest } from "@/lib/types";
+import { hashPassword, requireAdminSession } from "../../../../lib/auth";
+import { execute, query } from "../../../../lib/db";
+import type { UpdateAssociationRequest } from "../../../../lib/types";
 
 async function guardAdmin() {
   try {

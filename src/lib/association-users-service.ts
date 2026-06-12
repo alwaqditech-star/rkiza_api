@@ -1,11 +1,11 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import { hashPassword } from '@/lib/auth';
+import { execute, query } from './db';
+import { hashPassword } from './auth';
 import type {
   AssociationUserRole,
   AssociationUserStatus,
   AssociationUserView,
-} from '@/lib/types';
+} from './types';
 
 interface UserRow extends RowDataPacket {
   id: number;

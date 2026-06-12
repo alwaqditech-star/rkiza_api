@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientSettings } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
 import {
   closeFiscalYear,
   getFiscalStatus,
   openNewFiscalYear,
-} from '@/lib/fiscal-service';
+} from '../../../lib/fiscal-service';
 
 export async function GET() {
   try {

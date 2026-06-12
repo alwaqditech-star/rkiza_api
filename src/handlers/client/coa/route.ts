@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { addCoaAccount, listCoaAccounts } from '@/lib/coa-service';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientSettings } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
+import { addCoaAccount, listCoaAccounts } from '../../../lib/coa-service';
 
 export async function GET() {
   try {

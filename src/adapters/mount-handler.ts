@@ -1,6 +1,6 @@
 import type { Request, Response as ExpressResponse, NextFunction } from 'express';
-import { NextResponse } from '@/shims/next-server';
-import { requestContext } from '@/lib/request-context';
+import { NextResponse } from '../shims/next-server';
+import { requestContext } from '../lib/request-context';
 
 type RouteHandler = (
   request: globalThis.Request,

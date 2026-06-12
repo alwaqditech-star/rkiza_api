@@ -1,6 +1,6 @@
 import type { RowDataPacket } from 'mysql2';
-import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { NextResponse } from '../shims/next-server';
+import { query } from './db';
 
 export interface AssociationExportInfo {
   association_name: string;

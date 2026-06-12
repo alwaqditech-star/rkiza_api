@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { createBankAccount, listBankAccounts } from '@/lib/bank-service';
-import type { BankAccountStatus } from '@/lib/types';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientSettings } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
+import { createBankAccount, listBankAccounts } from '../../../lib/bank-service';
+import type { BankAccountStatus } from '../../../lib/types';
 
 export async function GET() {
   try {

@@ -1,10 +1,10 @@
-import { requireClientSession } from '@/lib/auth';
-import { buildPayrollExcel, payrollFilename } from '@/lib/hr-export';
+import { requireClientSession } from '../../../../lib/auth';
+import { buildPayrollExcel, payrollFilename } from '../../../../lib/hr-export';
 import {
   exportErrorResponse,
   exportExcelResponse,
-} from '@/lib/export-association';
-import { getPayrollPreview } from '@/lib/payroll-service';
+} from '../../../../lib/export-association';
+import { getPayrollPreview } from '../../../../lib/payroll-service';
 
 export async function GET(request: Request) {
   try {

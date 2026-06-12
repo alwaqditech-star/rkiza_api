@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/auth";
-import { renewAssociationSubscription } from "@/lib/associations";
+import { NextResponse } from "../../../../../shims/next-server";
+import { requireAdminSession } from "../../../../../lib/auth";
+import { renewAssociationSubscription } from "../../../../../lib/associations";
 
 async function guardAdmin() {
   try {

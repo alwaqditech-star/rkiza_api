@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import { requireClientSettings } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
+import { NextResponse } from '../../../../shims/next-server';
+import { requireClientSettings } from '../../../../lib/auth';
+import { handleClientApiError } from '../../../../lib/client-api-error';
 import {
   deleteAssociationUser,
   updateAssociationUser,
-} from '@/lib/association-users-service';
-import type { AssociationUserRole, AssociationUserStatus } from '@/lib/types';
+} from '../../../../lib/association-users-service';
+import type { AssociationUserRole, AssociationUserStatus } from '../../../../lib/types';
 
 interface RouteContext {
   params: Promise<{ id: string }>;

@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientWrite } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { createEmployee, listEmployees } from '@/lib/employee-service';
-import type { EmployeeStatus } from '@/lib/types';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientWrite } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
+import { createEmployee, listEmployees } from '../../../lib/employee-service';
+import type { EmployeeStatus } from '../../../lib/types';
 
 export async function GET() {
   try {

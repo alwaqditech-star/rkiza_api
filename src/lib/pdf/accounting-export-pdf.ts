@@ -3,13 +3,13 @@ import autoTable from 'jspdf-autotable';
 import {
   balanceLabel,
   formatPeriodLabel,
-} from '@/lib/accounting-export';
-import { fmtAmt, fmtDate } from '@/lib/format';
+} from '../accounting-export';
+import { fmtAmt, fmtDate } from '../format';
 import type {
   LedgerResult,
   TrialBalanceRow,
   UnifiedJournalView,
-} from '@/lib/journal-service';
+} from '../journal-service';
 import {
   drawPdfPageHeader,
   getArabicFontBase64,
@@ -21,7 +21,7 @@ import {
   registerArabicFont,
   setPdfTextColor,
   type PdfPageHeaderUser,
-} from '@/lib/pdf/arabic-pdf-helpers';
+} from './arabic-pdf-helpers';
 
 function drawPdfSubtitle(doc: jsPDF, lines: string[], startY: number): number {
   doc.setFontSize(10);

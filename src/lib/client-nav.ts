@@ -1,7 +1,7 @@
 import type { TablerIcon } from '@tabler/icons-react';
-import type { ClientAccessLevel } from '@/lib/client-permissions';
-import { getClientPermissions } from '@/lib/client-permissions';
-import type { ClientSession } from '@/lib/types';
+import type { ClientAccessLevel } from './client-permissions';
+import { getClientPermissions } from './client-permissions';
+import type { ClientSession } from './types';
 import {
   IconArrowDownCircle,
   IconArrowUpCircle,

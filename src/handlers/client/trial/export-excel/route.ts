@@ -1,13 +1,13 @@
-import { requireClientSession } from '@/lib/auth';
+import { requireClientSession } from '../../../../lib/auth';
 import {
   buildTrialBalanceExcel,
   trialBalanceFilename,
-} from '@/lib/accounting-export';
+} from '../../../../lib/accounting-export';
 import {
   exportErrorResponse,
   exportExcelResponse,
-} from '@/lib/export-association';
-import { getTrialBalance } from '@/lib/journal-service';
+} from '../../../../lib/export-association';
+import { getTrialBalance } from '../../../../lib/journal-service';
 
 export async function GET(request: Request) {
   try {

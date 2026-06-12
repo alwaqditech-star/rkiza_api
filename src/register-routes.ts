@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import type { Express, RequestHandler } from 'express';
-import { mountHandler } from '@/adapters/mount-handler';
+import { mountHandler } from './adapters/mount-handler';
 
 const requireHandler = createRequire(__filename);
 

@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { arabicAmount, fmtAmt, fmtDate } from "@/lib/format";
+import { arabicAmount, fmtAmt, fmtDate } from "../format";
 import {
   drawPdfPageHeader,
   getArabicFontBase64,
@@ -14,8 +14,8 @@ import {
   setPdfDrawColor,
   setPdfFillColor,
   setPdfTextColor,
-} from "@/lib/pdf/arabic-pdf-helpers";
-import type { VoucherType } from "@/lib/types";
+} from "./arabic-pdf-helpers";
+import type { VoucherType } from "../types";
 
 export interface VoucherPdfInput {
   voucher_type: VoucherType;

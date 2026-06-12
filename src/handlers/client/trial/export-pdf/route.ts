@@ -1,12 +1,12 @@
-import { requireClientSession } from '@/lib/auth';
-import { trialBalanceFilename } from '@/lib/accounting-export';
+import { requireClientSession } from '../../../../lib/auth';
+import { trialBalanceFilename } from '../../../../lib/accounting-export';
 import {
   exportErrorResponse,
   exportPdfResponse,
   getAssociationExportInfo,
-} from '@/lib/export-association';
-import { getTrialBalance } from '@/lib/journal-service';
-import { buildTrialBalancePdf } from '@/lib/pdf/accounting-export-pdf';
+} from '../../../../lib/export-association';
+import { getTrialBalance } from '../../../../lib/journal-service';
+import { buildTrialBalancePdf } from '../../../../lib/pdf/accounting-export-pdf';
 
 export async function GET(request: Request) {
   try {

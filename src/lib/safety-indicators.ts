@@ -1,4 +1,4 @@
-import type { SafetyFinancialInput } from '@/lib/types';
+import type { SafetyFinancialInput } from './types';
 
 export type SafetyPolarity = '+' | '-';
 export type SafetyCondition = '>=' | '<=';

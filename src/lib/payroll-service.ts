@@ -1,8 +1,8 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from '@/lib/db';
-import { createManualJournal } from '@/lib/journal-service';
-import { listActiveEmployees } from '@/lib/employee-service';
-import type { PayrollPreview } from '@/lib/types';
+import { execute, query } from './db';
+import { createManualJournal } from './journal-service';
+import { listActiveEmployees } from './employee-service';
+import type { PayrollPreview } from './types';
 
 const MONTH_LABELS: Record<string, string> = {
   '01': 'يناير',

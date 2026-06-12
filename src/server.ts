@@ -7,8 +7,8 @@ import {
   getDbConfigStatus,
   getDbTarget,
   testDbConnection,
-} from '@/lib/db';
-import { registerApiRoutes } from '@/register-routes';
+} from './lib/db';
+import { registerApiRoutes } from './register-routes';
 
 const PORT = Number(process.env.PORT ?? 3001);
 const handlersRoot = path.join(__dirname, 'handlers');

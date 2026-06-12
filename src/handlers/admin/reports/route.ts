@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
 import ExcelJS from "exceljs";
-import { query } from "@/lib/db";
-import { requireAdminSession } from "@/lib/auth";
-import { enrichAssociation, type AssociationRow } from "@/lib/associations";
+import { query } from "../../../lib/db";
+import { requireAdminSession } from "../../../lib/auth";
+import { enrichAssociation, type AssociationRow } from "../../../lib/associations";
 
 interface VoucherSummaryRow extends RowDataPacket {
   association_id: number;

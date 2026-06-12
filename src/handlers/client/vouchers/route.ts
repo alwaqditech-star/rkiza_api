@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { requireClientSession, requireClientWrite } from '@/lib/auth';
-import { handleClientApiError } from '@/lib/client-api-error';
-import { createVoucherWithJournal, listVouchers } from '@/lib/vouchers';
-import type { VoucherType } from '@/lib/types';
+import { NextResponse } from '../../../shims/next-server';
+import { requireClientSession, requireClientWrite } from '../../../lib/auth';
+import { handleClientApiError } from '../../../lib/client-api-error';
+import { createVoucherWithJournal, listVouchers } from '../../../lib/vouchers';
+import type { VoucherType } from '../../../lib/types';
 
 export async function GET(request: Request) {
   try {

@@ -1,10 +1,10 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { fmtAmt, fmtDate } from "@/lib/format";
+import { fmtAmt, fmtDate } from "../format";
 import {
   getVoucherListExportLabels,
   type VoucherListExportRow,
-} from "@/lib/vouchers-list-export";
+} from "../vouchers-list-export";
 import {
   drawPdfPageHeader,
   getArabicFontBase64,
@@ -15,8 +15,8 @@ import {
   PDF_MIST_RGB,
   registerArabicFont,
   setPdfTextColor,
-} from "@/lib/pdf/arabic-pdf-helpers";
-import type { VoucherType } from "@/lib/types";
+} from "./arabic-pdf-helpers";
+import type { VoucherType } from "../types";
 
 export interface VouchersListReportUser {
   association_name: string;
