@@ -20,13 +20,41 @@ function segmentToExpress(segment: string): { pattern: string; param?: string } 
   return { pattern: segment };
 }
 
+function isDynamicSegment(segment: string): boolean {
+  return segment.startsWith('[') && segment.endsWith(']');
+}
+
+function sortDirectoryEntries(entries: fs.Dirent[]): fs.Dirent[] {
+  return [...entries].sort((a, b) => {
+    const aDynamic = isDynamicSegment(a.name);
+    const bDynamic = isDynamicSegment(b.name);
+    if (aDynamic !== bDynamic) return aDynamic ? 1 : -1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function routeSpecificity(expressPath: string): number {
+  const segments = expressPath.split('/').filter(Boolean);
+  let score = segments.length * 100;
+
+  for (const segment of segments) {
+    score += segment.startsWith(':') ? 0 : 1000;
+  }
+
+  return score;
+}
+
+function compareRoutes(a: DiscoveredRoute, b: DiscoveredRoute): number {
+  return routeSpecificity(b.expressPath) - routeSpecificity(a.expressPath);
+}
+
 function discoverRoutes(
   directory: string,
   urlSegments: string[] = [],
   paramNames: string[] = [],
 ): DiscoveredRoute[] {
   const routes: DiscoveredRoute[] = [];
-  const entries = fs.readdirSync(directory, { withFileTypes: true });
+  const entries = sortDirectoryEntries(fs.readdirSync(directory, { withFileTypes: true }));
 
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
@@ -56,7 +84,7 @@ function discoverRoutes(
 }
 
 export function registerApiRoutes(app: Express, handlersRoot: string): number {
-  const routes = discoverRoutes(handlersRoot);
+  const routes = discoverRoutes(handlersRoot).sort(compareRoutes);
   const methods: Array<'get' | 'post' | 'put' | 'delete' | 'patch'> = [
     'get',
     'post',

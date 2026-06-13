@@ -18,7 +18,22 @@ type HandlerModule = {
 function buildWebRequest(req: Request): globalThis.Request {
   const protocol = req.protocol || 'http';
   const host = req.get('host') || 'localhost';
-  const url = `${protocol}://${host}${req.originalUrl}`;
+  let pathWithQuery = req.originalUrl || req.url || '/';
+
+  if (!pathWithQuery.includes('?') && req.query && Object.keys(req.query).length > 0) {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(req.query)) {
+      if (Array.isArray(value)) {
+        for (const item of value) searchParams.append(key, String(item));
+      } else if (value !== undefined) {
+        searchParams.append(key, String(value));
+      }
+    }
+    const query = searchParams.toString();
+    if (query) pathWithQuery += `?${query}`;
+  }
+
+  const url = `${protocol}://${host}${pathWithQuery}`;
   const headers = new Headers();
 
   for (const [key, value] of Object.entries(req.headers)) {
@@ -80,9 +95,8 @@ export function mountHandler(
   return async (req: Request, res: ExpressResponse, next: NextFunction) => {
     try {
       const mod = await loadModule();
-      const handler = mod[req.method as keyof HandlerModule] as
-        | RouteHandler
-        | undefined;
+      const method = req.method.toUpperCase() as keyof HandlerModule;
+      const handler = mod[method] as RouteHandler | undefined;
 
       if (!handler) {
         res.status(405).json({ success: false, message: 'الطريقة غير مدعومة' });
