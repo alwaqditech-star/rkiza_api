@@ -2,8 +2,8 @@ import { jsPDF } from "jspdf";
 import { arabicAmount, fmtAmt, fmtDate } from "../format";
 import {
   drawPdfPageHeader,
+  getPdfContentBelowHeaderRule,
   getArabicFontBase64,
-  getPdfContentStartY,
   loadAvatarImage,
   PDF_BRAND_PALE_RGB,
   PDF_BRAND_RGB,
@@ -161,8 +161,8 @@ export async function buildVoucherPdf(voucher: VoucherPdfInput): Promise<Buffer>
     now,
   );
 
-  // 2.5 cm below page title (سند القبض / سند الصرف)
-  const voucherY = getPdfContentStartY(25);
+  // 2.5 cm below the header divider line
+  const voucherY = getPdfContentBelowHeaderRule(25);
 
   drawVoucherPreview(doc, voucher, voucherY);
 

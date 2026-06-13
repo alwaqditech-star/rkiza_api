@@ -148,6 +148,14 @@ export function drawPdfPageHeader(
   doc.line(margin, 56, pageWidth - margin, 56);
 }
 
+/** Y of the horizontal rule under the page header block */
+export const PDF_HEADER_RULE_Y = 56;
+
+/** Y position for body content placed below the header rule */
+export function getPdfContentBelowHeaderRule(gapAfterRuleMm = 25): number {
+  return PDF_HEADER_RULE_Y + gapAfterRuleMm;
+}
+
 /** Y position for content placed below the centered page title (default 3cm). */
 export function getPdfContentStartY(belowTitleMm = 30): number {
   const topY = 20;
