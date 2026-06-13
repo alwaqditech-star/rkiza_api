@@ -161,12 +161,8 @@ export async function buildVoucherPdf(voucher: VoucherPdfInput): Promise<Buffer>
     now,
   );
 
-  const voucherY =
-    voucher.voucher_type === "disbursement"
-      ? getPdfContentStartY(30)
-      : 52 +
-        (doc.internal.pageSize.getHeight() - 52 - 108) / 2 -
-        8;
+  // 2.5 cm below page title (سند القبض / سند الصرف)
+  const voucherY = getPdfContentStartY(25);
 
   drawVoucherPreview(doc, voucher, voucherY);
 
