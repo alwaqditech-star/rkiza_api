@@ -161,7 +161,7 @@ export async function buildVoucherPdf(voucher: VoucherPdfInput): Promise<Buffer>
     now,
   );
 
-  const voucherY = getPdfContentStartY(28);
+  const voucherY = getPdfContentStartY(20);
 
   drawVoucherPreview(doc, voucher, voucherY);
 
