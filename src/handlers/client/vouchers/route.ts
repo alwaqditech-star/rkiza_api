@@ -1,6 +1,7 @@
 import { NextResponse } from '../../../shims/next-server';
 import { requireClientSession, requireClientWrite } from '../../../lib/auth';
 import { handleClientApiError } from '../../../lib/client-api-error';
+import { isFutureDate } from '../../../lib/format';
 import { createVoucherWithJournal, listVouchers } from '../../../lib/vouchers';
 import type { VoucherType } from '../../../lib/types';
 
@@ -54,6 +55,13 @@ export async function POST(request: Request) {
     if (voucherType !== 'receipt' && voucherType !== 'disbursement') {
       return NextResponse.json(
         { success: false, message: 'نوع السند غير صالح' },
+        { status: 400 },
+      );
+    }
+
+    if (isFutureDate(voucherDate)) {
+      return NextResponse.json(
+        { success: false, message: 'لا يمكن اختيار تاريخ مستقبلي' },
         { status: 400 },
       );
     }

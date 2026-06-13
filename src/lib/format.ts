@@ -3,6 +3,20 @@ export function today(): string {
   return d.toISOString().slice(0, 10);
 }
 
+export function isFutureDate(dateStr: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr.trim());
+  if (!match) return true;
+
+  const value = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  );
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return value > todayStart;
+}
+
 export function fmtDate(d: string | Date | null | undefined): string {
   if (!d) return '';
   const iso = typeof d === 'string' ? d : d.toISOString().slice(0, 10);
