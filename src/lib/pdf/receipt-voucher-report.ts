@@ -3,6 +3,7 @@ import { arabicAmount, fmtAmt, fmtDate } from "../format";
 import {
   drawPdfPageHeader,
   getArabicFontBase64,
+  getPdfContentStartY,
   loadAvatarImage,
   PDF_BRAND_PALE_RGB,
   PDF_BRAND_RGB,
@@ -148,10 +149,6 @@ export async function buildVoucherPdf(voucher: VoucherPdfInput): Promise<Buffer>
   const avatar = await loadAvatarImage(voucher.avatar_url);
   const now = new Date();
 
-  // Header rule closer to titles; voucher starts well below the light divider line
-  const headerRuleY = 46;
-  const gapAfterRuleMm = 38;
-
   drawPdfPageHeader(
     doc,
     {
@@ -162,10 +159,9 @@ export async function buildVoucherPdf(voucher: VoucherPdfInput): Promise<Buffer>
     avatar,
     labels.pageTitle,
     now,
-    { headerRuleY },
   );
 
-  const voucherY = headerRuleY + gapAfterRuleMm;
+  const voucherY = getPdfContentStartY(28);
 
   drawVoucherPreview(doc, voucher, voucherY);
 
