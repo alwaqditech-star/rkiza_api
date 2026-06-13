@@ -140,18 +140,9 @@ export function drawPdfPageHeader(
     });
   }
 
-  doc.setFontSize(10);
-  setPdfTextColor(doc, PDF_MIST_RGB);
-  doc.text(user.username, pageWidth - margin, imageY + imageSize + PDF_AVATAR_USERNAME_GAP_MM, {
-    align: "right",
-  });
-
   doc.setDrawColor(196, 216, 210);
   doc.line(margin, headerRuleY, pageWidth - margin, headerRuleY);
 }
-
-/** Vertical gap between avatar bottom and username in PDF headers (mm) */
-export const PDF_AVATAR_USERNAME_GAP_MM = 11;
 
 /** Y of the horizontal rule under the page header block */
 export const PDF_HEADER_RULE_Y = 56;
