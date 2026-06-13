@@ -101,11 +101,13 @@ export function drawPdfPageHeader(
   avatar: { data: string; format: "JPEG" | "PNG" | "WEBP" } | null,
   title: string,
   now: Date,
+  options?: { headerRuleY?: number },
 ) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 16;
   const topY = 20;
   const { dateLine, dayLine } = formatPdfDate(now);
+  const headerRuleY = options?.headerRuleY ?? PDF_HEADER_RULE_Y;
 
   doc.setFontSize(12);
   setPdfTextColor(doc, PDF_BRAND_RGB);
@@ -145,7 +147,7 @@ export function drawPdfPageHeader(
   });
 
   doc.setDrawColor(196, 216, 210);
-  doc.line(margin, 56, pageWidth - margin, 56);
+  doc.line(margin, headerRuleY, pageWidth - margin, headerRuleY);
 }
 
 /** Y of the horizontal rule under the page header block */

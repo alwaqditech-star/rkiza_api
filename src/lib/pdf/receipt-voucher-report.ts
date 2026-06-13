@@ -2,7 +2,6 @@ import { jsPDF } from "jspdf";
 import { arabicAmount, fmtAmt, fmtDate } from "../format";
 import {
   drawPdfPageHeader,
-  getPdfContentBelowHeaderRule,
   getArabicFontBase64,
   loadAvatarImage,
   PDF_BRAND_PALE_RGB,
@@ -149,6 +148,10 @@ export async function buildVoucherPdf(voucher: VoucherPdfInput): Promise<Buffer>
   const avatar = await loadAvatarImage(voucher.avatar_url);
   const now = new Date();
 
+  // Header rule closer to titles; voucher starts well below the light divider line
+  const headerRuleY = 46;
+  const gapAfterRuleMm = 38;
+
   drawPdfPageHeader(
     doc,
     {
@@ -159,10 +162,10 @@ export async function buildVoucherPdf(voucher: VoucherPdfInput): Promise<Buffer>
     avatar,
     labels.pageTitle,
     now,
+    { headerRuleY },
   );
 
-  // 2.5 cm below the header divider line
-  const voucherY = getPdfContentBelowHeaderRule(25);
+  const voucherY = headerRuleY + gapAfterRuleMm;
 
   drawVoucherPreview(doc, voucher, voucherY);
 
