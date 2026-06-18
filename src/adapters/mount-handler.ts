@@ -47,9 +47,15 @@ function buildWebRequest(req: Request): globalThis.Request {
   };
 
   if (req.method !== 'GET' && req.method !== 'HEAD' && req.body !== undefined) {
+    const contentType = String(req.headers['content-type'] ?? '').toLowerCase();
+
     if (Buffer.isBuffer(req.body)) {
       init.body = new Uint8Array(req.body);
-    } else if (typeof req.body === 'object' && req.body !== null) {
+    } else if (
+      typeof req.body === 'object' &&
+      req.body !== null &&
+      contentType.includes('application/json')
+    ) {
       init.body = JSON.stringify(req.body);
       if (!headers.has('content-type')) {
         headers.set('content-type', 'application/json');

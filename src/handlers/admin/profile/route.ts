@@ -1,7 +1,5 @@
 import { NextResponse } from "../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import {
   AUTH_COOKIE_NAME,
   buildAdminSession,
@@ -10,6 +8,7 @@ import {
   signToken,
 } from "../../../lib/auth";
 import { query } from "../../../lib/db";
+import { saveUploadedImage } from "../../../lib/image-upload";
 
 interface AdminRow extends RowDataPacket {
   id: number;
@@ -18,14 +17,6 @@ interface AdminRow extends RowDataPacket {
   name: string;
   avatar_url: string | null;
 }
-
-const ALLOWED_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
-const MAX_SIZE = 2 * 1024 * 1024;
 
 function setTokenCookie(response: NextResponse, token: string) {
   response.cookies.set(AUTH_COOKIE_NAME, token, {
@@ -38,27 +29,11 @@ function setTokenCookie(response: NextResponse, token: string) {
 }
 
 async function saveAvatar(adminId: number, file: File): Promise<string> {
-  if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error("نوع الصورة غير مدعوم — استخدم JPG أو PNG أو WEBP");
-  }
-  if (file.size > MAX_SIZE) {
-    throw new Error("حجم الصورة يجب ألا يتجاوز 2 ميجابايت");
-  }
-
-  const ext =
-    file.type === "image/png"
-      ? "png"
-      : file.type === "image/webp"
-        ? "webp"
-        : file.type === "image/gif"
-          ? "gif"
-          : "jpg";
-  const filename = `admin-${adminId}.${ext}`;
-  const dir = path.join(process.cwd(), "public", "uploads", "admins");
-  await mkdir(dir, { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), buffer);
-  return `/uploads/admins/${filename}?v=${Date.now()}`;
+  return saveUploadedImage(file, {
+    directory: 'admins',
+    filenameBase: `admin-${adminId}`,
+    publicPathPrefix: '/uploads/admins',
+  });
 }
 
 export async function GET() {

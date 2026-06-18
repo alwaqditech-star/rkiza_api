@@ -1,7 +1,5 @@
 import { NextResponse } from "../../../shims/next-server";
 import type { RowDataPacket } from "mysql2";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import {
   AUTH_COOKIE_NAME,
   buildClientSession,
@@ -12,6 +10,7 @@ import {
 } from "../../../lib/auth";
 import { handleClientApiError } from "../../../lib/client-api-error";
 import { query } from "../../../lib/db";
+import { saveUploadedImage } from "../../../lib/image-upload";
 
 interface AssociationRow extends RowDataPacket {
   id: number;
@@ -25,13 +24,13 @@ interface AssociationRow extends RowDataPacket {
   status: "active" | "expired";
 }
 
-const ALLOWED_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
-const MAX_SIZE = 2 * 1024 * 1024;
+async function saveAvatar(associationId: number, file: File): Promise<string> {
+  return saveUploadedImage(file, {
+    directory: 'associations',
+    filenameBase: `assoc-${associationId}`,
+    publicPathPrefix: '/uploads/associations',
+  });
+}
 
 function setTokenCookie(response: NextResponse, token: string) {
   response.cookies.set(AUTH_COOKIE_NAME, token, {
@@ -41,30 +40,6 @@ function setTokenCookie(response: NextResponse, token: string) {
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
-}
-
-async function saveAvatar(associationId: number, file: File): Promise<string> {
-  if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error("نوع الصورة غير مدعوم — استخدم JPG أو PNG أو WEBP");
-  }
-  if (file.size > MAX_SIZE) {
-    throw new Error("حجم الصورة يجب ألا يتجاوز 2 ميجابايت");
-  }
-
-  const ext =
-    file.type === "image/png"
-      ? "png"
-      : file.type === "image/webp"
-        ? "webp"
-        : file.type === "image/gif"
-          ? "gif"
-          : "jpg";
-  const filename = `assoc-${associationId}.${ext}`;
-  const dir = path.join(process.cwd(), "public", "uploads", "associations");
-  await mkdir(dir, { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), buffer);
-  return `/uploads/associations/${filename}?v=${Date.now()}`;
 }
 
 export async function GET() {

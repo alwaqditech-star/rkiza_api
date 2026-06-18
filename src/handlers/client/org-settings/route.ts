@@ -1,42 +1,22 @@
 import { NextResponse } from '../../../shims/next-server';
-import { mkdir, writeFile } from 'fs/promises';
-import path from 'path';
 import { requireClientSession, requireClientSettings } from '../../../lib/auth';
 import { handleClientApiError } from '../../../lib/client-api-error';
+import { saveUploadedImage } from '../../../lib/image-upload';
 import {
   getAssociationSettings,
   upsertAssociationSettings,
 } from '../../../lib/org-settings-service';
-
-const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
-const MAX_SIZE = 2 * 1024 * 1024;
 
 async function saveImage(
   associationId: number,
   file: File,
   kind: 'stamp' | 'logo',
 ): Promise<string> {
-  if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error('نوع الصورة غير مدعوم');
-  }
-  if (file.size > MAX_SIZE) {
-    throw new Error('حجم الصورة يجب ألا يتجاوز 2 ميجابايت');
-  }
-
-  const ext =
-    file.type === 'image/png'
-      ? 'png'
-      : file.type === 'image/webp'
-        ? 'webp'
-        : file.type === 'image/gif'
-          ? 'gif'
-          : 'jpg';
-  const filename = `${kind}-${associationId}.${ext}`;
-  const dir = path.join(process.cwd(), 'public', 'uploads', 'org');
-  await mkdir(dir, { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), buffer);
-  return `/uploads/org/${filename}?v=${Date.now()}`;
+  return saveUploadedImage(file, {
+    directory: 'org',
+    filenameBase: `${kind}-${associationId}`,
+    publicPathPrefix: '/uploads/org',
+  });
 }
 
 export async function GET() {
