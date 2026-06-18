@@ -65,6 +65,21 @@ export async function loadAvatarImage(
   if (!avatarUrl) return null;
 
   const cleanPath = avatarUrl.split("?")[0];
+
+  if (/^https?:\/\//i.test(cleanPath)) {
+    try {
+      const res = await fetch(cleanPath);
+      if (!res.ok) return null;
+      const buffer = Buffer.from(await res.arrayBuffer());
+      const ext = path.extname(new URL(cleanPath).pathname).toLowerCase();
+      const format =
+        ext === ".png" ? "PNG" : ext === ".webp" ? "WEBP" : ("JPEG" as const);
+      return { data: buffer.toString("base64"), format };
+    } catch {
+      return null;
+    }
+  }
+
   const filePath = path.join(process.cwd(), "public", cleanPath.replace(/^\//, ""));
 
   try {

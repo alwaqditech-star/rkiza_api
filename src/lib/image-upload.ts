@@ -30,6 +30,44 @@ function mimeToExt(mime: string): string {
   return 'jpg';
 }
 
+function shouldUseBlobStorage(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN) || Boolean(process.env.VERCEL);
+}
+
+async function saveToBlobStorage(
+  buffer: Buffer,
+  blobPath: string,
+  contentType: string,
+): Promise<string> {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error(
+      'تخزين الصور غير مهيأ على Vercel — أنشئ Blob Store واربطه بمشروع rkiza_api',
+    );
+  }
+
+  const { put } = await import('@vercel/blob');
+  const blob = await put(blobPath, buffer, {
+    access: 'public',
+    contentType,
+    addRandomSuffix: false,
+    allowOverwrite: true,
+  });
+
+  return `${blob.url}?v=${Date.now()}`;
+}
+
+async function saveToLocalFilesystem(
+  buffer: Buffer,
+  directory: string,
+  filename: string,
+  publicPathPrefix: string,
+): Promise<string> {
+  const dir = path.join(process.cwd(), 'public', 'uploads', directory);
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, filename), buffer);
+  return `${publicPathPrefix}/${filename}?v=${Date.now()}`;
+}
+
 export async function saveUploadedImage(
   file: File,
   options: {
@@ -48,9 +86,17 @@ export async function saveUploadedImage(
 
   const ext = mimeToExt(mime);
   const filename = `${options.filenameBase}.${ext}`;
-  const dir = path.join(process.cwd(), 'public', 'uploads', options.directory);
-  await mkdir(dir, { recursive: true });
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), buffer);
-  return `${options.publicPathPrefix}/${filename}?v=${Date.now()}`;
+
+  if (shouldUseBlobStorage()) {
+    const blobPath = `uploads/${options.directory}/${filename}`;
+    return saveToBlobStorage(buffer, blobPath, mime);
+  }
+
+  return saveToLocalFilesystem(
+    buffer,
+    options.directory,
+    filename,
+    options.publicPathPrefix,
+  );
 }
