@@ -30,6 +30,8 @@ function setTokenCookie(response: NextResponse, token: string) {
 
 async function saveAvatar(adminId: number, file: File): Promise<string> {
   return saveUploadedImage(file, {
+    scope: 'admin',
+    ownerId: adminId,
     directory: 'admins',
     filenameBase: `admin-${adminId}`,
     publicPathPrefix: '/uploads/admins',

@@ -12,7 +12,10 @@ async function saveImage(
   file: File,
   kind: 'stamp' | 'logo',
 ): Promise<string> {
+  const scope = kind === 'stamp' ? 'org-stamp' : 'org-logo';
   return saveUploadedImage(file, {
+    scope,
+    ownerId: associationId,
     directory: 'org',
     filenameBase: `${kind}-${associationId}`,
     publicPathPrefix: '/uploads/org',

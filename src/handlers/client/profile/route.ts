@@ -26,6 +26,8 @@ interface AssociationRow extends RowDataPacket {
 
 async function saveAvatar(associationId: number, file: File): Promise<string> {
   return saveUploadedImage(file, {
+    scope: 'association',
+    ownerId: associationId,
     directory: 'associations',
     filenameBase: `assoc-${associationId}`,
     publicPathPrefix: '/uploads/associations',

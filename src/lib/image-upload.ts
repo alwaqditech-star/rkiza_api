@@ -1,5 +1,10 @@
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
+import {
+  type MediaScope,
+  mediaPublicPath,
+  saveMediaAsset,
+} from './media-storage';
 
 const ALLOWED_TYPES = new Set([
   'image/jpeg',
@@ -31,7 +36,11 @@ function mimeToExt(mime: string): string {
 }
 
 function shouldUseBlobStorage(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN) || Boolean(process.env.VERCEL);
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+function shouldUseDatabaseStorage(): boolean {
+  return Boolean(process.env.VERCEL);
 }
 
 async function saveToBlobStorage(
@@ -39,12 +48,6 @@ async function saveToBlobStorage(
   blobPath: string,
   contentType: string,
 ): Promise<string> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error(
-      'تخزين الصور غير مهيأ على Vercel — أنشئ Blob Store واربطه بمشروع rkiza_api',
-    );
-  }
-
   const { put } = await import('@vercel/blob');
   const blob = await put(blobPath, buffer, {
     access: 'public',
@@ -52,7 +55,6 @@ async function saveToBlobStorage(
     addRandomSuffix: false,
     allowOverwrite: true,
   });
-
   return `${blob.url}?v=${Date.now()}`;
 }
 
@@ -71,6 +73,8 @@ async function saveToLocalFilesystem(
 export async function saveUploadedImage(
   file: File,
   options: {
+    scope: MediaScope;
+    ownerId: number;
     directory: string;
     filenameBase: string;
     publicPathPrefix: string;
@@ -84,15 +88,20 @@ export async function saveUploadedImage(
     throw new Error('حجم الصورة يجب ألا يتجاوز 2 ميجابايت');
   }
 
-  const ext = mimeToExt(mime);
-  const filename = `${options.filenameBase}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   if (shouldUseBlobStorage()) {
-    const blobPath = `uploads/${options.directory}/${filename}`;
+    const ext = mimeToExt(mime);
+    const blobPath = `uploads/${options.directory}/${options.filenameBase}.${ext}`;
     return saveToBlobStorage(buffer, blobPath, mime);
   }
 
+  if (shouldUseDatabaseStorage()) {
+    return saveMediaAsset(options.scope, options.ownerId, mime, buffer);
+  }
+
+  const ext = mimeToExt(mime);
+  const filename = `${options.filenameBase}.${ext}`;
   return saveToLocalFilesystem(
     buffer,
     options.directory,
@@ -100,3 +109,5 @@ export async function saveUploadedImage(
     options.publicPathPrefix,
   );
 }
+
+export { mediaPublicPath, type MediaScope };

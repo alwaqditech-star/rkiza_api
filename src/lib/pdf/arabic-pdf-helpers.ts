@@ -1,6 +1,7 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import type { jsPDF } from "jspdf";
+import { getMediaAsset, parseMediaPath } from "../media-storage";
 
 export const PDF_BRAND_RGB: [number, number, number] = [27, 42, 74];
 export const PDF_BRAND_LIGHT_RGB: [number, number, number] = [44, 74, 124];
@@ -65,6 +66,23 @@ export async function loadAvatarImage(
   if (!avatarUrl) return null;
 
   const cleanPath = avatarUrl.split("?")[0];
+
+  const mediaRef = parseMediaPath(cleanPath);
+  if (mediaRef) {
+    try {
+      const asset = await getMediaAsset(mediaRef.scope, mediaRef.ownerId);
+      if (!asset) return null;
+      const ext =
+        asset.contentType === "image/png"
+          ? "PNG"
+          : asset.contentType === "image/webp"
+            ? "WEBP"
+            : ("JPEG" as const);
+      return { data: asset.data.toString("base64"), format: ext };
+    } catch {
+      return null;
+    }
+  }
 
   if (/^https?:\/\//i.test(cleanPath)) {
     try {
