@@ -39,6 +39,7 @@ export interface CreateVoucherInput {
   method?: string;
   ref?: string;
   notes?: string;
+  cashAccountCode?: string;
 }
 
 export interface VoucherListItem extends VoucherWithEntries {
@@ -69,17 +70,18 @@ function buildJournalLines(
   voucherType: VoucherType,
   amount: number,
   accountCode: string,
+  cashAccountCode: string = DEFAULT_CASH_ACCOUNT,
 ) {
   if (voucherType === 'receipt') {
     return [
-      { account_code: DEFAULT_CASH_ACCOUNT, debit: amount, credit: 0 },
+      { account_code: cashAccountCode, debit: amount, credit: 0 },
       { account_code: accountCode, debit: 0, credit: amount },
     ];
   }
 
   return [
     { account_code: accountCode, debit: amount, credit: 0 },
-    { account_code: DEFAULT_CASH_ACCOUNT, debit: 0, credit: amount },
+    { account_code: cashAccountCode, debit: 0, credit: amount },
   ];
 }
 
@@ -122,6 +124,7 @@ export async function createVoucherWithJournal(
       input.voucherType,
       input.amount,
       input.accountCode,
+      input.cashAccountCode ?? DEFAULT_CASH_ACCOUNT,
     );
 
     for (const line of lines) {

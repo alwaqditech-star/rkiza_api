@@ -168,6 +168,13 @@ export interface Employee {
   net_salary: number;
 }
 
+export interface PayrollEmployee extends Employee {
+  disbursed: boolean;
+  disbursed_at: string | null;
+  voucher_id: number | null;
+  voucher_number: string | null;
+}
+
 export interface EmployeeInput {
   name: string;
   job_title: string;
@@ -185,11 +192,14 @@ export interface PayrollPreview {
   month: string;
   year: number;
   month_label: string;
-  employees: Employee[];
+  employees: PayrollEmployee[];
   total_gross: number;
   total_gosi: number;
   total_net: number;
   posted: boolean;
+  disbursed_count: number;
+  pending_count: number;
+  all_disbursed: boolean;
 }
 
 export interface AssociationSettings {

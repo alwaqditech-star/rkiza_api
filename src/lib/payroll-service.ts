@@ -1,8 +1,10 @@
 import type { RowDataPacket } from 'mysql2';
 import { execute, query } from './db';
+import { DEFAULT_CASH_ACCOUNT } from './coa-utils';
 import { createManualJournal } from './journal-service';
 import { listActiveEmployees } from './employee-service';
-import type { PayrollPreview } from './types';
+import { createVoucherWithJournal } from './vouchers';
+import type { PayrollEmployee, PayrollPreview } from './types';
 
 const MONTH_LABELS: Record<string, string> = {
   '01': 'يناير',
@@ -19,15 +21,54 @@ const MONTH_LABELS: Record<string, string> = {
   '12': 'ديسمبر',
 };
 
+const PAYABLE_ACCOUNT = '21401001';
+const GOSI_PAYABLE_ACCOUNT = '21401002';
+const SALARY_EXPENSE_ACCOUNT = '41101001';
+
 interface PayrollRunRow extends RowDataPacket {
   id: number;
   payroll_month: number;
   payroll_year: number;
 }
 
+interface PayrollDisbursementRow extends RowDataPacket {
+  employee_id: number;
+  net_amount: number;
+  voucher_id: number;
+  disbursed_at: string | Date;
+  voucher_number: string;
+}
+
 function isMissingPayrollTable(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return message.includes('payroll_runs') || message.includes("doesn't exist");
+}
+
+function isMissingDisbursementTable(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('payroll_disbursements') || message.includes("doesn't exist");
+}
+
+let disbursementTableReady: Promise<void> | null = null;
+
+async function ensurePayrollDisbursementsTable(): Promise<void> {
+  if (!disbursementTableReady) {
+    disbursementTableReady = execute(`
+      CREATE TABLE IF NOT EXISTS payroll_disbursements (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        association_id INT UNSIGNED NOT NULL,
+        employee_id INT UNSIGNED NOT NULL,
+        payroll_month TINYINT UNSIGNED NOT NULL,
+        payroll_year YEAR NOT NULL,
+        net_amount DECIMAL(15, 2) NOT NULL,
+        voucher_id INT UNSIGNED NOT NULL,
+        disbursed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_payroll_employee_period (association_id, employee_id, payroll_year, payroll_month),
+        INDEX idx_payroll_disbursements_period (association_id, payroll_year, payroll_month)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).then(() => undefined);
+  }
+  await disbursementTableReady;
 }
 
 function normalizeMonth(month: string | number): string {
@@ -57,6 +98,67 @@ async function isPayrollPosted(
   }
 }
 
+async function listPayrollDisbursements(
+  associationId: number,
+  month: string,
+  year: number,
+): Promise<Map<number, PayrollDisbursementRow>> {
+  try {
+    await ensurePayrollDisbursementsTable();
+    const rows = await query<PayrollDisbursementRow[]>(
+      `SELECT pd.employee_id, pd.net_amount, pd.voucher_id, pd.disbursed_at,
+              fv.voucher_number
+       FROM payroll_disbursements pd
+       INNER JOIN financial_vouchers fv ON fv.id = pd.voucher_id
+       WHERE pd.association_id = ? AND pd.payroll_year = ? AND pd.payroll_month = ?`,
+      [associationId, year, Number(normalizeMonth(month))],
+    );
+    return new Map(rows.map((row) => [row.employee_id, row]));
+  } catch (error) {
+    if (isMissingDisbursementTable(error)) return new Map();
+    throw error;
+  }
+}
+
+function buildAccrualLines(employees: PayrollEmployee[], description: string) {
+  const lines: {
+    account_code: string;
+    debit_amount: number;
+    credit_amount: number;
+    line_description: string;
+  }[] = [];
+
+  employees.forEach((employee) => {
+    const lineDescription = `${employee.name} — ${description}`;
+    if (employee.gross_salary > 0) {
+      lines.push({
+        account_code: SALARY_EXPENSE_ACCOUNT,
+        debit_amount: employee.gross_salary,
+        credit_amount: 0,
+        line_description: lineDescription,
+      });
+    }
+    if (employee.net_salary > 0) {
+      lines.push({
+        account_code: PAYABLE_ACCOUNT,
+        debit_amount: 0,
+        credit_amount: employee.net_salary,
+        line_description: lineDescription,
+      });
+    }
+    if (employee.gosi_amount > 0) {
+      lines.push({
+        account_code: GOSI_PAYABLE_ACCOUNT,
+        debit_amount: 0,
+        credit_amount: employee.gosi_amount,
+        line_description: lineDescription,
+      });
+    }
+  });
+
+  return lines;
+}
+
 export async function getPayrollPreview(
   associationId: number,
   month: string,
@@ -64,20 +166,39 @@ export async function getPayrollPreview(
 ): Promise<PayrollPreview> {
   const monthKey = normalizeMonth(month);
   const employees = await listActiveEmployees(associationId);
-  const totalGross = employees.reduce((sum, emp) => sum + emp.gross_salary, 0);
-  const totalGosi = employees.reduce((sum, emp) => sum + emp.gosi_amount, 0);
-  const totalNet = employees.reduce((sum, emp) => sum + emp.net_salary, 0);
+  const disbursements = await listPayrollDisbursements(associationId, monthKey, year);
   const posted = await isPayrollPosted(associationId, monthKey, year);
+
+  const payrollEmployees: PayrollEmployee[] = employees.map((employee) => {
+    const disbursement = disbursements.get(employee.id);
+    return {
+      ...employee,
+      disbursed: Boolean(disbursement),
+      disbursed_at: disbursement
+        ? String(disbursement.disbursed_at).slice(0, 19).replace('T', ' ')
+        : null,
+      voucher_id: disbursement?.voucher_id ?? null,
+      voucher_number: disbursement?.voucher_number ?? null,
+    };
+  });
+
+  const totalGross = payrollEmployees.reduce((sum, emp) => sum + emp.gross_salary, 0);
+  const totalGosi = payrollEmployees.reduce((sum, emp) => sum + emp.gosi_amount, 0);
+  const totalNet = payrollEmployees.reduce((sum, emp) => sum + emp.net_salary, 0);
+  const disbursedCount = payrollEmployees.filter((emp) => emp.disbursed).length;
 
   return {
     month: monthKey,
     year,
     month_label: getMonthLabel(monthKey),
-    employees,
+    employees: payrollEmployees,
     total_gross: totalGross,
     total_gosi: totalGosi,
     total_net: totalNet,
     posted,
+    disbursed_count: disbursedCount,
+    pending_count: payrollEmployees.length - disbursedCount,
+    all_disbursed: payrollEmployees.length > 0 && disbursedCount === payrollEmployees.length,
   };
 }
 
@@ -106,26 +227,7 @@ export async function postPayrollJournal(
     description,
     reference: 'رواتب',
     entryType: 'مسير رواتب',
-    lines: [
-      {
-        account_code: '41101001',
-        debit_amount: preview.total_gross,
-        credit_amount: 0,
-        line_description: description,
-      },
-      {
-        account_code: '21401001',
-        debit_amount: 0,
-        credit_amount: preview.total_net,
-        line_description: description,
-      },
-      {
-        account_code: '21401002',
-        debit_amount: 0,
-        credit_amount: preview.total_gosi,
-        line_description: description,
-      },
-    ],
+    lines: buildAccrualLines(preview.employees, description),
   });
 
   try {
@@ -150,4 +252,74 @@ export async function postPayrollJournal(
   }
 
   return { journalId, description };
+}
+
+export async function disburseEmployeePayroll(input: {
+  associationId: number;
+  employeeId: number;
+  month: string;
+  year: number;
+  paymentAccountCode?: string;
+}): Promise<{ voucherId: number; voucherNumber: string }> {
+  const monthKey = normalizeMonth(input.month);
+  const preview = await getPayrollPreview(input.associationId, monthKey, input.year);
+
+  if (!preview.posted) {
+    throw new Error('يجب ترحيل مسير الرواتب قبل صرف رواتب الموظفين');
+  }
+
+  const employee = preview.employees.find((item) => item.id === input.employeeId);
+  if (!employee) {
+    throw new Error('الموظف غير موجود في هذا المسير');
+  }
+
+  if (employee.disbursed) {
+    throw new Error('تم صرف راتب هذا الموظف مسبقاً لهذا الشهر');
+  }
+
+  if (employee.net_salary <= 0) {
+    throw new Error('صافي راتب الموظف يجب أن يكون أكبر من صفر');
+  }
+
+  const purpose = `راتب ${employee.name} — ${preview.month_label} ${input.year}م`;
+  const voucherDate = `${input.year}-${monthKey}-28`;
+
+  const voucherId = await createVoucherWithJournal({
+    associationId: input.associationId,
+    voucherType: 'disbursement',
+    voucherDate,
+    beneficiaryName: employee.name,
+    amount: employee.net_salary,
+    accountCode: PAYABLE_ACCOUNT,
+    purpose,
+    method: 'تحويل',
+    ref: `رواتب-${monthKey}-${input.year}`,
+    notes: employee.job_title,
+    cashAccountCode: input.paymentAccountCode || DEFAULT_CASH_ACCOUNT,
+  });
+
+  await ensurePayrollDisbursementsTable();
+  await execute(
+    `INSERT INTO payroll_disbursements
+     (association_id, employee_id, payroll_month, payroll_year, net_amount, voucher_id)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      input.associationId,
+      employee.id,
+      Number(monthKey),
+      input.year,
+      employee.net_salary,
+      voucherId,
+    ],
+  );
+
+  const voucherRows = await query<RowDataPacket[]>(
+    'SELECT voucher_number FROM financial_vouchers WHERE id = ? LIMIT 1',
+    [voucherId],
+  );
+
+  return {
+    voucherId,
+    voucherNumber: String(voucherRows[0]?.voucher_number ?? ''),
+  };
 }
