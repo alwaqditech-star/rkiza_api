@@ -1,6 +1,7 @@
-import type { RowDataPacket } from 'mysql2';
+import type { RowDataPacket, PoolConnection } from 'mysql2/promise';
 import { execute, getConnection, query } from './db';
 import { DEFAULT_CASH_ACCOUNT } from './coa-utils';
+import { assertJournalDateAllowed } from './fiscal-service';
 import {
   decodeVoucherDescription,
   encodeVoucherDescription,
@@ -88,6 +89,16 @@ function buildJournalLines(
 export async function createVoucherWithJournal(
   input: CreateVoucherInput,
 ): Promise<number> {
+  const result = await createVoucherWithJournalDetailed(input);
+  return result.voucherId;
+}
+
+export async function createVoucherWithJournalDetailed(
+  input: CreateVoucherInput,
+  existingConn?: PoolConnection,
+): Promise<{ voucherId: number; voucherNumber: string }> {
+  await assertJournalDateAllowed(input.associationId, input.voucherDate);
+
   const voucherNumber = await nextVoucherNumber(
     input.associationId,
     input.voucherType,
@@ -100,9 +111,13 @@ export async function createVoucherWithJournal(
     account_code: input.accountCode,
   };
 
-  const conn = await getConnection();
+  const conn = existingConn ?? (await getConnection());
+  const ownsConnection = !existingConn;
+
   try {
-    await conn.beginTransaction();
+    if (ownsConnection) {
+      await conn.beginTransaction();
+    }
 
     const [voucherResult] = await conn.execute(
       `INSERT INTO financial_vouchers
@@ -135,13 +150,20 @@ export async function createVoucherWithJournal(
       );
     }
 
-    await conn.commit();
-    return voucherId;
+    if (ownsConnection) {
+      await conn.commit();
+    }
+
+    return { voucherId, voucherNumber };
   } catch (error) {
-    await conn.rollback();
+    if (ownsConnection) {
+      await conn.rollback();
+    }
     throw error;
   } finally {
-    conn.release();
+    if (ownsConnection) {
+      conn.release();
+    }
   }
 }
 

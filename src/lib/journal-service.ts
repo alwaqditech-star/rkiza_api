@@ -1,5 +1,6 @@
 import type { RowDataPacket } from 'mysql2';
 import { execute, getConnection, query } from './db';
+import { assertJournalDateAllowed } from './fiscal-service';
 import { listCoaAccounts } from './coa-service';
 import { decodeVoucherDescription } from './voucher-meta';
 import { listVouchers } from './vouchers';
@@ -216,6 +217,8 @@ export async function listUnifiedJournals(
 export async function createManualJournal(
   input: CreateManualJournalInput,
 ): Promise<number> {
+  await assertJournalDateAllowed(input.associationId, input.journalDate);
+
   const journalNumber = await nextManualJournalNumber(input.associationId);
   const validLines = input.lines.filter(
     (line) => line.account_code && (line.debit_amount > 0 || line.credit_amount > 0),

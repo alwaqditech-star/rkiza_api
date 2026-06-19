@@ -1,9 +1,9 @@
 import type { RowDataPacket } from 'mysql2';
-import { execute, query } from './db';
+import { execute, getConnection, query } from './db';
 import { DEFAULT_CASH_ACCOUNT } from './coa-utils';
 import { createManualJournal } from './journal-service';
 import { listActiveEmployees } from './employee-service';
-import { createVoucherWithJournal } from './vouchers';
+import { createVoucherWithJournalDetailed } from './vouchers';
 import type { PayrollEmployee, PayrollPreview } from './types';
 
 const MONTH_LABELS: Record<string, string> = {
@@ -50,6 +50,28 @@ function isMissingDisbursementTable(error: unknown): boolean {
 }
 
 let disbursementTableReady: Promise<void> | null = null;
+let payrollRunsTableReady: Promise<void> | null = null;
+
+async function ensurePayrollRunsTable(): Promise<void> {
+  if (!payrollRunsTableReady) {
+    payrollRunsTableReady = execute(`
+      CREATE TABLE IF NOT EXISTS payroll_runs (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        association_id INT UNSIGNED NOT NULL,
+        payroll_month TINYINT UNSIGNED NOT NULL,
+        payroll_year YEAR NOT NULL,
+        total_gross DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+        total_gosi DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+        total_net DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+        employee_count INT UNSIGNED NOT NULL DEFAULT 0,
+        manual_journal_id INT UNSIGNED DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_payroll_period (association_id, payroll_year, payroll_month)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).then(() => undefined);
+  }
+  await payrollRunsTableReady;
+}
 
 async function ensurePayrollDisbursementsTable(): Promise<void> {
   if (!disbursementTableReady) {
@@ -231,6 +253,7 @@ export async function postPayrollJournal(
   });
 
   try {
+    await ensurePayrollRunsTable();
     await execute(
       `INSERT INTO payroll_runs
        (association_id, payroll_month, payroll_year, total_gross, total_gosi,
@@ -248,7 +271,10 @@ export async function postPayrollJournal(
       ],
     );
   } catch (error) {
-    if (!isMissingPayrollTable(error)) throw error;
+    if (isMissingPayrollTable(error)) {
+      throw new Error('يرجى تشغيل database/patch-employees-payroll.sql على قاعدة البيانات');
+    }
+    throw error;
   }
 
   return { journalId, description };
@@ -284,42 +310,49 @@ export async function disburseEmployeePayroll(input: {
   const purpose = `راتب ${employee.name} — ${preview.month_label} ${input.year}م`;
   const voucherDate = `${input.year}-${monthKey}-28`;
 
-  const voucherId = await createVoucherWithJournal({
-    associationId: input.associationId,
-    voucherType: 'disbursement',
-    voucherDate,
-    beneficiaryName: employee.name,
-    amount: employee.net_salary,
-    accountCode: PAYABLE_ACCOUNT,
-    purpose,
-    method: 'تحويل',
-    ref: `رواتب-${monthKey}-${input.year}`,
-    notes: employee.job_title,
-    cashAccountCode: input.paymentAccountCode || DEFAULT_CASH_ACCOUNT,
-  });
-
   await ensurePayrollDisbursementsTable();
-  await execute(
-    `INSERT INTO payroll_disbursements
-     (association_id, employee_id, payroll_month, payroll_year, net_amount, voucher_id)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [
-      input.associationId,
-      employee.id,
-      Number(monthKey),
-      input.year,
-      employee.net_salary,
-      voucherId,
-    ],
-  );
+  const conn = await getConnection();
 
-  const voucherRows = await query<RowDataPacket[]>(
-    'SELECT voucher_number FROM financial_vouchers WHERE id = ? LIMIT 1',
-    [voucherId],
-  );
+  try {
+    await conn.beginTransaction();
 
-  return {
-    voucherId,
-    voucherNumber: String(voucherRows[0]?.voucher_number ?? ''),
-  };
+    const { voucherId, voucherNumber } = await createVoucherWithJournalDetailed(
+      {
+        associationId: input.associationId,
+        voucherType: 'disbursement',
+        voucherDate,
+        beneficiaryName: employee.name,
+        amount: employee.net_salary,
+        accountCode: PAYABLE_ACCOUNT,
+        purpose,
+        method: 'تحويل',
+        ref: `رواتب-${monthKey}-${input.year}`,
+        notes: employee.job_title,
+        cashAccountCode: input.paymentAccountCode || DEFAULT_CASH_ACCOUNT,
+      },
+      conn,
+    );
+
+    await conn.execute(
+      `INSERT INTO payroll_disbursements
+       (association_id, employee_id, payroll_month, payroll_year, net_amount, voucher_id)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        input.associationId,
+        employee.id,
+        Number(monthKey),
+        input.year,
+        employee.net_salary,
+        voucherId,
+      ],
+    );
+
+    await conn.commit();
+    return { voucherId, voucherNumber };
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }

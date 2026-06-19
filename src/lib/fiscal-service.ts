@@ -78,32 +78,44 @@ export async function closeFiscalYear(associationId: number): Promise<void> {
   const closeDate = `${year}-12-31`;
   const description = `قيد إقفال السنة المالية ${year}م`;
 
+  const closingLines = [
+    {
+      account_code: '31201001',
+      debit_amount: totalIncome,
+      credit_amount: 0,
+      line_description: 'إقفال الإيرادات',
+    },
+    {
+      account_code: '41101001',
+      debit_amount: 0,
+      credit_amount: totalExp,
+      line_description: 'إقفال المصروفات',
+    },
+  ];
+
+  if (surplus >= 0) {
+    closingLines.push({
+      account_code: '23101001',
+      debit_amount: 0,
+      credit_amount: surplus,
+      line_description: 'ترحيل الفائض',
+    });
+  } else {
+    closingLines.push({
+      account_code: '23101001',
+      debit_amount: Math.abs(surplus),
+      credit_amount: 0,
+      line_description: 'ترحيل العجز',
+    });
+  }
+
   const journalId = await createManualJournal({
     associationId,
     journalDate: closeDate,
     description,
     reference: 'إقفال',
     entryType: 'قيد إقفال',
-    lines: [
-      {
-        account_code: '31201001',
-        debit_amount: totalIncome,
-        credit_amount: 0,
-        line_description: 'إقفال الإيرادات',
-      },
-      {
-        account_code: '41101001',
-        debit_amount: 0,
-        credit_amount: totalExp,
-        line_description: 'إقفال المصروفات',
-      },
-      {
-        account_code: '23101001',
-        debit_amount: 0,
-        credit_amount: Math.max(surplus, 0),
-        line_description: 'ترحيل الفائض',
-      },
-    ].filter((line) => line.debit_amount > 0 || line.credit_amount > 0),
+    lines: closingLines.filter((line) => line.debit_amount > 0 || line.credit_amount > 0),
   });
 
   const journals = await listUnifiedJournals(associationId);
@@ -152,4 +164,19 @@ export async function openNewFiscalYear(
     current_fiscal_year: newYear,
     journal_seq_start: 1,
   });
+}
+
+export async function assertJournalDateAllowed(
+  associationId: number,
+  journalDate: string,
+): Promise<void> {
+  const year = Number(journalDate.slice(0, 4));
+  if (!year || journalDate.length < 4) {
+    throw new Error('تاريخ القيد غير صالح');
+  }
+
+  const closedYears = await listClosedYears(associationId);
+  if (closedYears.some((item) => item.fiscal_year === year)) {
+    throw new Error(`السنة المالية ${year}م مقفلة — لا يمكن إضافة قيود أو سندات`);
+  }
 }

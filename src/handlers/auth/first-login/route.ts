@@ -5,7 +5,7 @@ import {
   AUTH_COOKIE_NAME,
   buildClientSession,
   hashPassword,
-  requireClientSession,
+  requirePrimaryClientAccount,
   signToken,
 } from "../../../lib/auth";
 
@@ -31,15 +31,7 @@ function setTokenCookie(response: NextResponse, token: string) {
 
 export async function POST(request: Request) {
   try {
-    let session;
-    try {
-      session = await requireClientSession();
-    } catch {
-      return NextResponse.json(
-        { success: false, message: "صلاحية الجمعية مطلوبة" },
-        { status: 401 },
-      );
-    }
+    const session = await requirePrimaryClientAccount();
 
     const body = (await request.json()) as Record<string, unknown>;
     const { new_password } = body as { new_password?: string };
@@ -61,19 +53,34 @@ export async function POST(request: Request) {
       );
     }
 
+    const associations = await query<AssociationRow[]>(
+      `SELECT id, username, association_name, avatar_url, is_first_login,
+              subscription_end, status
+       FROM associations WHERE id = ?`,
+      [session.id],
+    );
+
+    if (!associations.length) {
+      return NextResponse.json(
+        { success: false, message: "الجمعية غير موجودة" },
+        { status: 404 },
+      );
+    }
+
+    const association = associations[0];
+    if (!association.is_first_login) {
+      return NextResponse.json(
+        { success: false, message: "تم إكمال تسجيل الدخول الأول مسبقاً" },
+        { status: 400 },
+      );
+    }
+
     const password_hash = await hashPassword(new_password);
     await query(
       "UPDATE associations SET password_hash = ?, is_first_login = 0 WHERE id = ?",
       [password_hash, session.id],
     );
 
-    const associations = await query<AssociationRow[]>(
-      `SELECT id, username, association_name, avatar_url, is_first_login, subscription_end, status
-       FROM associations WHERE id = ?`,
-      [session.id],
-    );
-
-    const association = associations[0];
     const updatedSession = buildClientSession({
       ...association,
       is_first_login: 0,
@@ -89,8 +96,17 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : "خطأ غير معروف";
+    if (message.includes("Unauthorized") || message.includes("صلاحية")) {
+      return NextResponse.json(
+        { success: false, message: "صلاحية الجمعية مطلوبة" },
+        { status: 403 },
+      );
+    }
+    if (message.includes("مدير الجمعية")) {
+      return NextResponse.json({ success: false, message }, { status: 403 });
+    }
     return NextResponse.json(
-      { success: false, message: "خطأ في تحديث كلمة المرور", error: message },
+      { success: false, message: "خطأ في تحديث كلمة المرور" },
       { status: 500 },
     );
   }

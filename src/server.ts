@@ -9,11 +9,18 @@ import {
   testDbConnection,
 } from './lib/db';
 import { registerApiRoutes } from './register-routes';
+import { ensureJwtSecretConfigured } from './lib/auth';
 
 const PORT = Number(process.env.PORT ?? 3001);
 const handlersRoot = path.join(__dirname, 'handlers');
 
 export const app = express();
+
+try {
+  ensureJwtSecretConfigured();
+} catch (error) {
+  console.error('[AUTH CONFIG ERROR]', error instanceof Error ? error.message : error);
+}
 
 app.use(
   cors({
@@ -33,12 +40,12 @@ app.use(
         origin === 'http://localhost:3000' ||
         /^https:\/\/[\w-]+\.vercel\.app$/.test(origin)
       ) {
-        callback(null, true);
-        return;
-      }
-
       callback(null, true);
-    },
+      return;
+    }
+
+    callback(new Error('Not allowed by CORS'), false);
+  },
     credentials: true,
   }),
 );

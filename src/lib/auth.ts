@@ -13,8 +13,31 @@ export const AUTH_COOKIE_NAME = 'rikaz_token';
 const BCRYPT_ROUNDS = 10;
 const TOKEN_EXPIRY = '7d';
 
+export class ClientPermissionError extends Error {
+  constructor(message = 'ليس لديك صلاحية لهذا الإجراء') {
+    super(message);
+    this.name = 'ClientPermissionError';
+  }
+}
+
+export class SubscriptionExpiredError extends Error {
+  constructor(message = 'انتهت صلاحية الاشتراك') {
+    super(message);
+    this.name = 'SubscriptionExpiredError';
+  }
+}
+
 function getJwtSecret(): string {
-  return process.env.JWT_SECRET?.trim() || 'rikaz_secret_key_change_in_production';
+  const secret = process.env.JWT_SECRET?.trim();
+  if (secret) return secret;
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    throw new Error('JWT_SECRET is required in production');
+  }
+  return 'rikaz_secret_key_change_in_production';
+}
+
+export function ensureJwtSecretConfigured(): void {
+  getJwtSecret();
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -100,7 +123,23 @@ export async function requireClientSession(): Promise<ClientSession> {
   if (!session || session.role !== 'client') {
     throw new Error('Unauthorized');
   }
+  assertClientSubscriptionActive(session);
   return session;
+}
+
+function assertClientSubscriptionActive(session: ClientSession): void {
+  if (session.status === 'expired') {
+    throw new SubscriptionExpiredError();
+  }
+
+  const end = new Date(session.subscription_end);
+  if (Number.isNaN(end.getTime())) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (end < today) {
+    throw new SubscriptionExpiredError();
+  }
 }
 
 export function buildAdminSession(admin: {
@@ -164,13 +203,6 @@ export function buildClientSessionFromSubUser(input: {
     is_sub_user: true,
     display_name: input.display_name,
   };
-}
-
-export class ClientPermissionError extends Error {
-  constructor(message = 'ليس لديك صلاحية لهذا الإجراء') {
-    super(message);
-    this.name = 'ClientPermissionError';
-  }
 }
 
 async function requireClientSessionWithPermission(
