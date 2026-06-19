@@ -10,6 +10,7 @@ import {
 } from "../../../lib/auth";
 import { handleClientApiError } from "../../../lib/client-api-error";
 import { query } from "../../../lib/db";
+import { validatePassword } from "../../../lib/password-policy";
 import { saveUploadedImage } from "../../../lib/image-upload";
 
 interface AssociationRow extends RowDataPacket {
@@ -104,11 +105,14 @@ export async function PUT(request: Request) {
       );
     }
 
-    if (password && password.length < 6) {
-      return NextResponse.json(
-        { success: false, message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" },
-        { status: 400 },
-      );
+    if (password) {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        return NextResponse.json(
+          { success: false, message: passwordError },
+          { status: 400 },
+        );
+      }
     }
 
     if (password && password !== confirmPassword) {

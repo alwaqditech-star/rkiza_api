@@ -3,6 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import { hashPassword, requireAdminSession } from "../../../../lib/auth";
 import { execute, query } from "../../../../lib/db";
 import type { UpdateAssociationRequest } from "../../../../lib/types";
+import { validatePassword } from "../../../../lib/password-policy";
 
 async function guardAdmin() {
   try {
@@ -69,11 +70,14 @@ export async function PUT(
       }
     }
 
-    if (password && password.length < 6) {
-      return NextResponse.json(
-        { success: false, message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" },
-        { status: 400 },
-      );
+    if (password) {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        return NextResponse.json(
+          { success: false, message: passwordError },
+          { status: 400 },
+        );
+      }
     }
 
     const updates: string[] = [];

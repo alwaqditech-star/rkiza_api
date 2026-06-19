@@ -6,6 +6,7 @@ import {
   listAssociationUsers,
 } from '../../../lib/association-users-service';
 import type { AssociationUserRole, AssociationUserStatus } from '../../../lib/types';
+import { validatePassword } from '../../../lib/password-policy';
 
 export async function GET() {
   try {
@@ -29,9 +30,17 @@ export async function POST(request: Request) {
     const username = String(body.username ?? '').trim();
     const password = String(body.password ?? '');
 
-    if (!displayName || !username || password.length < 6) {
+    if (!displayName || !username) {
       return NextResponse.json(
-        { success: false, message: 'الاسم واسم المستخدم وكلمة مرور (6+ أحرف) مطلوبة' },
+        { success: false, message: 'الاسم واسم المستخدم مطلوبان' },
+        { status: 400 },
+      );
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return NextResponse.json(
+        { success: false, message: passwordError },
         { status: 400 },
       );
     }

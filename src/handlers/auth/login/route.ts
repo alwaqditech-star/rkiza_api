@@ -10,6 +10,7 @@ import {
   signToken,
 } from "../../../lib/auth";
 import { getSubscriptionDaysRemaining } from "../../../lib/associations";
+import { checkRateLimit, getClientIp } from "../../../lib/rate-limit";
 interface AdminRow extends RowDataPacket {
   id: number;
   username: string;
@@ -199,6 +200,27 @@ async function loginAssociationSubUser(username: string, password: string) {
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit(`login:${ip}`, {
+      max: 10,
+      windowMs: 15 * 60 * 1000,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `محاولات كثيرة. أعد المحاولة بعد ${rateLimit.retryAfterSec} ثانية`,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSec ?? 60),
+          },
+        },
+      );
+    }
+
     const body = (await request.json()) as Record<string, unknown>;
     const username = (body.username as string | undefined)?.trim();
     const password = body.password as string | undefined;

@@ -8,6 +8,7 @@ import {
   requirePrimaryClientAccount,
   signToken,
 } from "../../../lib/auth";
+import { validatePassword } from "../../../lib/password-policy";
 
 interface AssociationRow extends RowDataPacket {
   id: number;
@@ -43,12 +44,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (new_password.length < 6) {
+    const passwordError = validatePassword(new_password);
+    if (passwordError) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل",
-        },
+        { success: false, message: passwordError },
         { status: 400 },
       );
     }

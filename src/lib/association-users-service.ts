@@ -1,6 +1,7 @@
 import type { RowDataPacket } from 'mysql2';
 import { execute, query } from './db';
 import { hashPassword } from './auth';
+import { validatePassword } from './password-policy';
 import type {
   AssociationUserRole,
   AssociationUserStatus,
@@ -96,6 +97,9 @@ export async function createAssociationUser(
     status?: AssociationUserStatus;
   },
 ): Promise<number> {
+  const passwordError = validatePassword(input.password);
+  if (passwordError) throw new Error(passwordError);
+
   const duplicateAssoc = await query<RowDataPacket[]>(
     'SELECT id FROM associations WHERE username = ?',
     [input.username],
@@ -142,6 +146,11 @@ export async function updateAssociationUser(
     status: AssociationUserStatus;
   },
 ): Promise<boolean> {
+  if (input.password) {
+    const passwordError = validatePassword(input.password);
+    if (passwordError) throw new Error(passwordError);
+  }
+
   const duplicateAssoc = await query<RowDataPacket[]>(
     'SELECT id FROM associations WHERE username = ? AND id != ?',
     [input.username, associationId],

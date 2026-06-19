@@ -6,6 +6,7 @@ import {
   updateAssociationUser,
 } from '../../../../lib/association-users-service';
 import type { AssociationUserRole, AssociationUserStatus } from '../../../../lib/types';
+import { validatePassword } from '../../../../lib/password-policy';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -17,10 +18,21 @@ export async function PUT(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body = (await request.json()) as Record<string, unknown>;
 
+    const password = String(body.password ?? '') || undefined;
+    if (password) {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        return NextResponse.json(
+          { success: false, message: passwordError },
+          { status: 400 },
+        );
+      }
+    }
+
     const updated = await updateAssociationUser(session.id, Number(id), {
       display_name: String(body.display_name ?? '').trim(),
       username: String(body.username ?? '').trim(),
-      password: String(body.password ?? '') || undefined,
+      password,
       role: (body.role ?? 'accountant') as AssociationUserRole,
       status: (body.status ?? 'active') as AssociationUserStatus,
     });
